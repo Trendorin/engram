@@ -1,0 +1,37 @@
+# Maintainer: Trendorin <193045225+Trendorin@users.noreply.github.com>
+#
+# Builds the source tree this file lives in:  cd packaging/arch && makepkg -si
+pkgname=engram
+pkgver=0.1.0
+pkgrel=1
+pkgdesc='Memory scanner and debugger for Linux that AI agents can drive (native, Wine and Proton)'
+arch=('x86_64')
+url='https://github.com/Trendorin/engram'
+license=('GPL-3.0-or-later')
+depends=('qt6-base' 'fontconfig' 'libxkbcommon' 'libcap' 'gcc-libs' 'glibc' 'hicolor-icon-theme')
+makedepends=('rust')
+install=engram.install
+options=('!debug' '!lto')
+
+_src() { cd "$startdir/../.."; }
+
+build() {
+  _src
+  export CARGO_TARGET_DIR="$srcdir/target" RUSTUP_TOOLCHAIN=stable
+  cargo build --release --locked -p engramd -p engram -p engram-gui
+}
+
+check() {
+  _src
+  export CARGO_TARGET_DIR="$srcdir/target" RUSTUP_TOOLCHAIN=stable
+  cargo test --release --locked -p engram-core -p engram-proto -p engramd -p engram
+}
+
+package() {
+  _src
+  local id=io.github.trendorin.Engram
+  install -Dm755 -t "$pkgdir/usr/bin" "$srcdir/target/release/"{engramd,engram,engram-gui}
+  install -Dm644 "packaging/$id.desktop" -t "$pkgdir/usr/share/applications"
+  install -Dm644 "packaging/$id.metainfo.xml" -t "$pkgdir/usr/share/metainfo"
+  install -Dm644 "packaging/$id.svg" -t "$pkgdir/usr/share/icons/hicolor/scalable/apps"
+}

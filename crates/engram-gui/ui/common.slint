@@ -1,0 +1,64 @@
+// Small building blocks shared by the views.
+
+import { Palette } from "std-widgets.slint";
+import { Tone } from "state.slint";
+
+/// Rounded label for short tags (process kind, client names).
+export component Badge inherits Rectangle {
+    in property <string> text;
+    in property <color> tint: Palette.accent-background;
+    border-radius: 3px;
+    background: tint.with-alpha(0.16);
+    border-width: 1px;
+    border-color: tint.with-alpha(0.45);
+    min-width: label.preferred-width + 10px;
+    height: label.preferred-height + 2px;
+    label := Text {
+        text: root.text;
+        font-size: 11px;
+        color: Palette.foreground;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+}
+
+export component Muted inherits Text {
+    color: Tone.muted;
+    vertical-alignment: center;
+}
+
+export component Heading inherits Text {
+    font-weight: 600;
+    vertical-alignment: center;
+}
+
+/// Thin line between sections.
+export component Separator inherits Rectangle {
+    height: 1px;
+    background: Palette.border;
+}
+
+/// Draggable divider. `delta` reports the drag distance along the axis.
+export component Splitter inherits Rectangle {
+    in property <bool> vertical; // true: a vertical bar that resizes horizontally
+    callback dragged(delta: length);
+    min-width: vertical ? 7px : 0px;
+    max-width: vertical ? 7px : 100000px;
+    min-height: vertical ? 0px : 7px;
+    max-height: vertical ? 100000px : 7px;
+    line := Rectangle {
+        x: root.vertical ? (root.width - 1px) / 2 : 0px;
+        y: root.vertical ? 0px : (root.height - 1px) / 2;
+        width: root.vertical ? 1px : root.width;
+        height: root.vertical ? root.height : 1px;
+        background: touch.has-hover || touch.pressed ? Palette.accent-background : Palette.border.with-alpha(0.5);
+    }
+    touch := TouchArea {
+        mouse-cursor: root.vertical ? MouseCursor.col-resize : MouseCursor.row-resize;
+        moved => {
+            if (self.pressed) {
+                root.dragged(root.vertical ? self.mouse-x - self.pressed-x : self.mouse-y - self.pressed-y);
+            }
+        }
+    }
+}

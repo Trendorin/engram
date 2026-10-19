@@ -1,0 +1,115 @@
+// Engram main window.
+
+import { Palette } from "std-widgets.slint";
+import { App, Tone, Choices } from "state.slint";
+import { Splitter, Muted } from "common.slint";
+import { TopBar, ApprovalBar } from "topbar.slint";
+import { ScanPanel } from "scan.slint";
+import { AddressTable } from "table.slint";
+import { SidePanel } from "side.slint";
+import { ProcessPicker } from "picker.slint";
+
+export { App, Tone, Choices }
+
+component StatusBar inherits Rectangle {
+    background: Palette.alternate-background;
+    height: 26px;
+    Rectangle {
+        y: 0;
+        height: 1px;
+        background: Palette.border;
+    }
+    HorizontalLayout {
+        padding-left: 10px;
+        padding-right: 10px;
+        spacing: 14px;
+        Text {
+            text: App.message;
+            overflow: elide;
+            horizontal-stretch: 1;
+            vertical-alignment: center;
+            color: App.message-level == 3 ? Tone.error : App.message-level == 2 ? Tone.warning : App.message-level == 1 ? Tone.success : Palette.foreground;
+        }
+        Muted {
+            font-size: 11px;
+            text: App.connected ? "Engine connected" : "Engine offline";
+            color: App.connected ? Tone.muted : Tone.error;
+        }
+        Muted {
+            font-size: 11px;
+            text: "Access: \{App.access == "" ? "?" : App.access}";
+        }
+        Muted {
+            font-size: 11px;
+            text: "Agent writes: \{Choices.policies[App.policy-index]}";
+        }
+    }
+}
+
+export component MainWindow inherits Window {
+    title: App.attached ? "Engram — \{App.target-name}" : "Engram";
+    icon: @image-url("../../../packaging/io.github.trendorin.Engram.svg");
+    preferred-width: 1320px;
+    preferred-height: 860px;
+    min-width: 980px;
+    min-height: 640px;
+    background: Palette.background;
+
+    property <length> side-width: 440px;
+    property <length> table-height: 250px;
+
+    VerticalLayout {
+        TopBar { }
+
+        if App.approvals.length > 0: ApprovalBar {
+            request: App.approvals[0];
+            more: App.approvals.length - 1;
+        }
+
+        HorizontalLayout {
+            padding: 8px;
+            spacing: 0px;
+            vertical-stretch: 1;
+
+            left := VerticalLayout {
+                horizontal-stretch: 1;
+                spacing: 0px;
+                ScanPanel {
+                    vertical-stretch: 1;
+                }
+                Splitter {
+                    vertical: false;
+                    dragged(delta) => {
+                        root.table-height = max(170px, min(left.height - 260px, root.table-height - delta));
+                    }
+                }
+                AddressTable {
+                    preferred-height: root.table-height;
+                    min-height: 170px;
+                    vertical-stretch: 0;
+                }
+            }
+
+            Splitter {
+                vertical: true;
+                dragged(delta) => {
+                    root.side-width = max(320px, min(root.width - 600px, root.side-width - delta));
+                }
+            }
+
+            SidePanel {
+                width: root.side-width;
+            }
+        }
+
+        StatusBar { }
+    }
+
+    if App.picker-open: ProcessPicker {
+        width: root.width;
+        height: root.height;
+        close => {
+            App.picker-open = false;
+        }
+    }
+}

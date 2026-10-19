@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=Engram
+GenericName=Memory Scanner
+GenericName[ru]=Сканер памяти
+Comment=Inspect and edit the memory of your own programs and games, together with an AI agent
+Comment[ru]=Анализ и изменение памяти своих программ и игр вместе с ИИ-агентом
+Exec=engram-gui
+Icon=io.github.trendorin.Engram
+Terminal=false
+Categories=Development;Debugger;
+Keywords=memory;scanner;cheat;debugger;reverse engineering;agent;mcp;
+StartupWMClass=engram-gui

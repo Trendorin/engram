@@ -1,0 +1,3 @@
+[env]
+# Slint's Qt backend (native QStyle widgets) locates Qt through qmake.
+QMAKE = { value = "/usr/bin/qmake6", force = false }

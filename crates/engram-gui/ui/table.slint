@@ -1,0 +1,233 @@
+// The address table: saved entries with freeze toggles and an inline editor.
+
+import { Button, LineEdit, CheckBox, ListView, GroupBox, Palette } from "std-widgets.slint";
+import { App, Tone, EntryRow } from "state.slint";
+import { Muted } from "common.slint";
+
+// Zero preferred widths make the stretch factors alone size the columns, so
+// header and rows line up whatever their text.
+component HeaderCell inherits Text {
+    min-width: 0px;
+    preferred-width: 0px;
+    color: Tone.muted;
+    font-size: 12px;
+    overflow: elide;
+    vertical-alignment: center;
+}
+
+component Cell inherits Text {
+    min-width: 0px;
+    preferred-width: 0px;
+    overflow: elide;
+    vertical-alignment: center;
+}
+
+export component AddressTable inherits GroupBox {
+    title: App.table-game == "" ? "Address table" : "Address table — \{App.table-game}";
+
+    property <int> selected: -1; // row index
+    property <int> selected-id: -1;
+    property <string> original-value;
+    property <bool> editing: selected >= 0 && selected < App.entries.length && App.entries[selected].id == selected-id;
+
+    function select(i: int) {
+        selected = i;
+        selected-id = App.entries[i].id;
+        desc.text = App.entries[i].description;
+        addr.text = App.entries[i].address;
+        type.text = App.entries[i].type;
+        value.text = App.entries[i].value;
+        original-value = App.entries[i].value;
+    }
+
+    function clear() {
+        selected = -1;
+        selected-id = -1;
+        desc.text = "";
+        addr.text = "";
+        type.text = "";
+        value.text = "";
+        original-value = "";
+    }
+
+    function apply() {
+        if (editing) {
+            App.update-entry(selected-id, desc.text, addr.text, type.text, value.text == original-value ? "" : value.text);
+            original-value = value.text;
+        } else if (addr.text != "") {
+            App.add-entry(addr.text, type.text == "" ? "i32" : type.text, desc.text);
+            clear();
+        }
+    }
+
+    VerticalLayout {
+        spacing: 6px;
+
+        HorizontalLayout {
+            padding-left: 8px;
+            padding-right: 8px;
+            spacing: 8px;
+            HeaderCell {
+                text: "Freeze";
+                width: 48px;
+            }
+            HeaderCell {
+                text: "Description";
+                horizontal-stretch: 2;
+            }
+            HeaderCell {
+                text: "Address";
+                horizontal-stretch: 2;
+            }
+            HeaderCell {
+                text: "Type";
+                width: 64px;
+            }
+            HeaderCell {
+                text: "Value";
+                horizontal-stretch: 1.4;
+            }
+        }
+
+        Rectangle {
+            vertical-stretch: 1;
+            min-height: 80px;
+
+            ListView {
+                for entry[i] in App.entries: Rectangle {
+                    height: 28px;
+                    background: i == root.selected ? Palette.selection-background : Math.mod(i, 2) == 1 ? Palette.alternate-background : transparent;
+
+                    TouchArea {
+                        clicked => {
+                            root.select(i);
+                        }
+                        double-clicked => {
+                            root.select(i);
+                            value.focus();
+                            value.select-all();
+                        }
+                    }
+
+                    HorizontalLayout {
+                        padding-left: 8px;
+                        padding-right: 8px;
+                        spacing: 8px;
+                        property <color> fg: i == root.selected ? Palette.selection-foreground : Palette.foreground;
+
+                        Rectangle {
+                            width: 48px;
+                            CheckBox {
+                                x: 4px;
+                                checked: entry.frozen;
+                                enabled: App.attached;
+                            }
+                            // The click goes to the engine; the box follows the model.
+                            TouchArea {
+                                enabled: App.attached;
+                                clicked => {
+                                    App.freeze-entry(entry.id, !entry.frozen);
+                                }
+                            }
+                        }
+                        Cell {
+                            text: entry.description;
+                            color: parent.fg;
+                            horizontal-stretch: 2;
+                        }
+                        Cell {
+                            text: entry.address;
+                            color: parent.fg;
+                            horizontal-stretch: 2;
+                            font-family: Tone.mono;
+                        }
+                        Cell {
+                            text: entry.type;
+                            color: parent.fg;
+                            width: 64px;
+                        }
+                        Cell {
+                            text: entry.value == "" ? "??" : entry.value;
+                            color: entry.value == "" ? Tone.muted : parent.fg;
+                            horizontal-stretch: 1.4;
+                            font-weight: entry.frozen ? 600 : 400;
+                        }
+                    }
+                }
+            }
+
+            if App.entries.length == 0: Muted {
+                text: "No saved addresses yet.\nDouble-click a scan result, or let your agent call table_add.";
+                horizontal-alignment: center;
+                wrap: word-wrap;
+            }
+        }
+
+        HorizontalLayout {
+            spacing: 6px;
+            desc := LineEdit {
+                placeholder-text: "Description";
+                horizontal-stretch: 2;
+                accepted => {
+                    root.apply();
+                }
+            }
+            addr := LineEdit {
+                placeholder-text: "Address, Game.exe+0x10, [[…]+0x18]";
+                horizontal-stretch: 2;
+                accepted => {
+                    root.apply();
+                }
+            }
+            type := LineEdit {
+                placeholder-text: "i32";
+                width: 74px;
+                accepted => {
+                    root.apply();
+                }
+            }
+            value := LineEdit {
+                placeholder-text: root.editing ? "New value" : "Value";
+                enabled: root.editing;
+                horizontal-stretch: 1.4;
+                accepted => {
+                    root.apply();
+                }
+            }
+        }
+
+        HorizontalLayout {
+            spacing: 6px;
+            alignment: end;
+            if root.editing: Button {
+                text: "Inspect";
+                clicked => {
+                    App.inspect-address = addr.text;
+                    App.side-tab = 1;
+                }
+            }
+            if root.editing: Button {
+                text: "Remove";
+                clicked => {
+                    App.remove-entry(root.selected-id);
+                    root.clear();
+                }
+            }
+            if root.editing: Button {
+                text: "New entry";
+                clicked => {
+                    root.clear();
+                    desc.focus();
+                }
+            }
+            Button {
+                text: root.editing ? "Apply" : "Add";
+                primary: true;
+                enabled: root.editing || (addr.text != "" && App.attached);
+                clicked => {
+                    root.apply();
+                }
+            }
+        }
+    }
+}

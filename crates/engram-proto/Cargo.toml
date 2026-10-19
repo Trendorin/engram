@@ -1,0 +1,11 @@
+[package]
+name = "engram-proto"
+description = "Engram wire protocol, tool catalog, daemon client and agent workspace kit"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+libc.workspace = true

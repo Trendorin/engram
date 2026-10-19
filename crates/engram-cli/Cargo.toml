@@ -1,0 +1,15 @@
+[package]
+name = "engram"
+description = "Engram command line, MCP server and agent setup"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "engram"
+path = "src/main.rs"
+
+[dependencies]
+engram-proto.workspace = true
+serde_json.workspace = true
+libc.workspace = true

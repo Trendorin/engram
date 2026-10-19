@@ -1,0 +1,13 @@
+[package]
+name = "engram-core"
+description = "Process memory engine: maps, I/O, scanning, pointers, disassembly, hardware watchpoints"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+serde.workspace = true
+libc.workspace = true
+rayon.workspace = true
+memchr.workspace = true
+iced-x86.workspace = true
