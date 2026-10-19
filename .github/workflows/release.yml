@@ -25,7 +25,7 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Version
         id: version
@@ -60,7 +60,7 @@ jobs:
       - name: Build dependencies
         run: pacman -Syu --noconfirm --needed rust qt6-base fontconfig libxkbcommon libcap hicolor-icon-theme
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Build as an unprivileged user
         run: |
@@ -98,7 +98,7 @@ jobs:
           curl -fsSL https://sh.rustup.rs | sh -s -- -y --profile minimal
           echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Build
         run: packaging/deb/build.sh
@@ -126,7 +126,7 @@ jobs:
           dnf install -y --setopt=install_weak_deps=False rpm-build cargo rust gcc-c++ \
             qt6-qtbase-devel fontconfig-devel libxkbcommon-devel
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: actions/download-artifact@v4
         with:
@@ -158,7 +158,7 @@ jobs:
     needs: source
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Build dependencies, Rust and Qt
         run: packaging/appimage/build.sh --deps
@@ -184,7 +184,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: actions/download-artifact@v4
         with:
