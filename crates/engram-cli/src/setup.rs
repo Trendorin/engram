@@ -127,17 +127,24 @@ pub fn setup() -> ExitCode {
         };
         let elevate = if on_path("pkexec").is_some() { "pkexec" } else { "sudo" };
         // The binary may sit in a directory the user owns, so another process could swap it while the
-        // password prompt is open. The elevated step therefore opens the file once, checks that it
-        // is the very content hashed here, and applies the capability to that open file.
+        // password prompt is open. The elevated step therefore checks, right before and right after
+        // applying the capability, that the file is a plain file with the content hashed here; if it
+        // changed in between, the capability is removed again and nothing is granted. (`setcap` itself
+        // refuses /proc/self/fd paths, so it has to work on the path.)
         let Some(sum) = sha256_of(&daemon) else {
             bad("engramd", "could not read it to compute its checksum");
             return ExitCode::from(1);
         };
         const GRANT: &str = r#"f="$1"; want="$2"; setcap="$3"
-exec 3< "$f" || exit 1
-got=$(sha256sum <&3 | cut -d' ' -f1)
-if [ "$got" != "$want" ]; then echo "engramd changed while waiting for the password; nothing was granted" >&2; exit 1; fi
-exec "$setcap" cap_sys_ptrace=ep /proc/self/fd/3"#;
+sum() { sha256sum "$f" | cut -d' ' -f1; }
+if [ ! -f "$f" ] || [ -L "$f" ] || [ "$(sum)" != "$want" ]; then
+    echo "engramd changed while waiting for the password; nothing was granted" >&2; exit 1
+fi
+"$setcap" cap_sys_ptrace=ep "$f" || exit 1
+if [ -L "$f" ] || [ "$(sum)" != "$want" ]; then
+    "$setcap" -r "$f" 2>/dev/null
+    echo "engramd changed while the capability was applied; it was removed again" >&2; exit 1
+fi"#;
         let status =
             Command::new(elevate).arg("/bin/sh").arg("-c").arg(GRANT).arg("engram-setup").arg(&daemon).arg(&sum).arg(setcap).status();
         match status {

@@ -5,6 +5,14 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.1.2] — 2026-10-20
+
+### Fixed
+- **Grant access** (`engram setup`) failed with "Invalid file '/proc/self/fd/3' for capability operation".
+  The check added in 1.0.1 against swapping the engine while the password prompt is open used a path that
+  `setcap` refuses. The elevated step now verifies the file's content and that it is not a symlink right
+  before and right after applying the capability, and removes the capability again if the file changed.
+
 ## [1.1.1] — 2026-10-20
 
 ### Fixed
@@ -107,7 +115,8 @@ First release.
 - Settings in `~/.config/engram/config.json`, editable with `engram config` and in the window.
 - `engram uninstall` removes exactly the installed files (manifest), optionally user data.
 
-[Unreleased]: https://github.com/Trendorin/engram/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/Trendorin/engram/compare/v1.1.2...HEAD
+[1.1.2]: https://github.com/Trendorin/engram/releases/tag/v1.1.2
 [1.1.1]: https://github.com/Trendorin/engram/releases/tag/v1.1.1
 [1.1.0]: https://github.com/Trendorin/engram/releases/tag/v1.1.0
 [1.0.1]: https://github.com/Trendorin/engram/releases/tag/v1.0.1
