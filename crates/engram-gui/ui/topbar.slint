@@ -14,7 +14,7 @@ export component TopBar inherits Rectangle {
         spacing: 8px;
 
         Button {
-            text: App.attached ? "Change process…" : "Select process…";
+            text: App.attached ? @tr("Change process…") : @tr("Select process…");
             primary: !App.attached && App.connected;
             enabled: App.connected;
             clicked => {
@@ -37,12 +37,12 @@ export component TopBar inherits Rectangle {
                 }
             }
             Muted {
-                text: "pid \{App.target-pid}" + (App.paused ? "  ·  paused" : "");
+                text: @tr("pid {}", App.target-pid) + (App.paused ? @tr("  ·  paused") : "");
             }
         }
 
         if !App.attached: Muted {
-            text: App.connected ? "No process attached" : "Connecting to the Engram engine…";
+            text: App.connected ? @tr("No process attached") : @tr("Connecting to the Engram engine…");
         }
 
         Rectangle {
@@ -59,7 +59,7 @@ export component TopBar inherits Rectangle {
                 padding-right: 4px;
                 spacing: 8px;
                 Text {
-                    text: App.access == "disabled" ? "Kernel forbids ptrace (ptrace_scope=3)" : "Only programs started by Engram can be read";
+                    text: App.access == "disabled" ? @tr("Kernel forbids ptrace (ptrace_scope=3)") : @tr("Only programs started by Engram can be read");
                     color: Palette.foreground;
                     vertical-alignment: center;
                 }
@@ -67,7 +67,7 @@ export component TopBar inherits Rectangle {
                     alignment: center;
                     padding: 3px;
                     Button {
-                        text: "Grant access…";
+                        text: @tr("Grant access…");
                         clicked => {
                             App.grant-access();
                         }
@@ -77,14 +77,14 @@ export component TopBar inherits Rectangle {
         }
 
         if App.attached: Button {
-            text: App.paused ? "Resume" : "Pause";
+            text: App.paused ? @tr("Resume") : @tr("Pause");
             clicked => {
                 App.toggle-pause();
             }
         }
 
         if App.attached: Button {
-            text: "Detach";
+            text: @tr("Detach");
             clicked => {
                 App.detach();
             }
@@ -117,7 +117,7 @@ export component ApprovalBar inherits Rectangle {
             HorizontalLayout {
                 spacing: 6px;
                 Text {
-                    text: "Approval needed:";
+                    text: @tr("Approval needed:");
                     font-weight: 600;
                     color: Tone.warning;
                 }
@@ -127,11 +127,11 @@ export component ApprovalBar inherits Rectangle {
                     color: Tone.agent;
                 }
                 Text {
-                    text: "wants to run \{root.request.tool}";
+                    text: @tr("wants to run {}", root.request.tool);
                     color: Palette.foreground;
                 }
                 if root.more > 0: Muted {
-                    text: "(+\{root.more} more waiting)";
+                    text: @tr("(+{} more waiting)", root.more);
                 }
                 Rectangle {
                     horizontal-stretch: 1;
@@ -149,19 +149,19 @@ export component ApprovalBar inherits Rectangle {
             HorizontalLayout {
                 spacing: 6px;
                 Button {
-                    text: "Deny";
+                    text: @tr("Deny");
                     clicked => {
                         App.respond(root.request.id, "deny");
                     }
                 }
                 Button {
-                    text: "Allow for session";
+                    text: @tr("Allow for session");
                     clicked => {
                         App.respond(root.request.id, "allow_session");
                     }
                 }
                 Button {
-                    text: "Allow";
+                    text: @tr("Allow");
                     primary: true;
                     clicked => {
                         App.respond(root.request.id, "allow");

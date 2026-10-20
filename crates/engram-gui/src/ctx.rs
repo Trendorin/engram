@@ -137,8 +137,8 @@ impl Ctx {
                     let loaded = v["table_entries_loaded"].as_u64().unwrap_or(0);
                     let name = s(&v["attached"]["name"]).to_string();
                     let msg = match loaded {
-                        0 => format!("Attached to {name}"),
-                        n => format!("Attached to {name}; loaded {n} saved address(es)"),
+                        0 => crate::i18n::tf("Attached to {}", &[&name]),
+                        n => crate::i18n::tf("Attached to {}; loaded {} saved address(es)", &[&name, &n]),
                     };
                     view::message(w, Level::Success, msg);
                     me.refresh_status();

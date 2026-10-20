@@ -36,7 +36,7 @@ component PathRow inherits HorizontalLayout {
         color: Palette.foreground;
     }
     Button {
-        text: "Open";
+        text: @tr("Open");
         clicked => {
             App.open-folder(root.path);
         }
@@ -53,25 +53,25 @@ export component SettingsTab inherits ScrollView {
         spacing: 10px;
 
         GroupBox {
-            title: "Agents";
+            title: @tr("Agents");
             VerticalLayout {
                 spacing: 6px;
                 Field {
-                    label: "Agent for \"Open terminal\"";
+                    label: @tr("Agent for \"Open terminal\"");
                     ComboBox {
                         model: App.agents;
                         current-index <=> App.agent-index;
                     }
                 }
                 Field {
-                    label: "Terminal";
+                    label: @tr("Terminal");
                     LineEdit {
                         text <=> App.set-terminal;
-                        placeholder-text: App.terminal-detected == "" ? "none found — enter a command" : "auto: \{App.terminal-detected}";
+                        placeholder-text: App.terminal-detected == "" ? @tr("none found — enter a command") : @tr("auto: {}", App.terminal-detected);
                     }
                 }
                 Field {
-                    label: "Workspace folder";
+                    label: @tr("Workspace folder");
                     LineEdit {
                         text <=> App.set-workspace;
                         placeholder-text: App.workspace-default;
@@ -81,18 +81,18 @@ export component SettingsTab inherits ScrollView {
         }
 
         GroupBox {
-            title: "Safety";
+            title: @tr("Safety");
             VerticalLayout {
                 spacing: 6px;
                 Field {
-                    label: "Agent writes when Engram starts";
+                    label: @tr("Agent writes when Engram starts");
                     ComboBox {
                         model: Choices.policies;
                         current-index <=> App.set-policy-index;
                     }
                 }
                 Field {
-                    label: "Wait for my answer (s)";
+                    label: @tr("Wait for my answer (s)");
                     SpinBox {
                         minimum: 10;
                         maximum: 3600;
@@ -104,11 +104,18 @@ export component SettingsTab inherits ScrollView {
         }
 
         GroupBox {
-            title: "Window and engine";
+            title: @tr("Window and engine");
             VerticalLayout {
                 spacing: 6px;
                 Field {
-                    label: "Scan results shown";
+                    label: @tr("Language");
+                    ComboBox {
+                        model: [@tr("Follow system"), "English", "Русский"];
+                        current-index <=> App.set-language-index;
+                    }
+                }
+                Field {
+                    label: @tr("Scan results shown");
                     SpinBox {
                         minimum: 50;
                         maximum: 1000;
@@ -117,7 +124,7 @@ export component SettingsTab inherits ScrollView {
                     }
                 }
                 Field {
-                    label: "Refresh live values (ms)";
+                    label: @tr("Refresh live values (ms)");
                     SpinBox {
                         minimum: 200;
                         maximum: 5000;
@@ -126,7 +133,7 @@ export component SettingsTab inherits ScrollView {
                     }
                 }
                 Field {
-                    label: "Rewrite frozen values (ms)";
+                    label: @tr("Rewrite frozen values (ms)");
                     SpinBox {
                         minimum: 20;
                         maximum: 5000;
@@ -147,13 +154,13 @@ export component SettingsTab inherits ScrollView {
                 vertical-alignment: center;
             }
             Button {
-                text: "Restore defaults";
+                text: @tr("Restore defaults");
                 clicked => {
                     App.reset-settings();
                 }
             }
             Button {
-                text: "Save";
+                text: @tr("Save");
                 primary: true;
                 clicked => {
                     App.save-settings();
@@ -162,30 +169,30 @@ export component SettingsTab inherits ScrollView {
         }
 
         GroupBox {
-            title: "About";
+            title: @tr("About");
             VerticalLayout {
                 spacing: 4px;
                 HorizontalLayout {
                     spacing: 8px;
                     Heading {
-                        text: "Engram \{App.version}";
+                        text: @tr("Engram {}", App.version);
                     }
                     Muted {
-                        text: "memory access: \{App.access == "" ? "?" : App.access}";
+                        text: @tr("memory access: {}", App.access == "" ? "?" : App.access);
                         horizontal-stretch: 1;
                         horizontal-alignment: right;
                     }
                 }
                 PathRow {
-                    label: "Settings";
+                    label: @tr("Settings");
                     path: App.config-path;
                 }
                 PathRow {
-                    label: "Data";
+                    label: @tr("Data");
                     path: App.data-path;
                 }
                 PathRow {
-                    label: "Logs";
+                    label: @tr("Logs");
                     path: App.logs-path;
                 }
             }

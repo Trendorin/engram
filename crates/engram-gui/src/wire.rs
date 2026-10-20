@@ -49,7 +49,11 @@ fn picker(app: &App, ctx: &Ctx) {
         let me = c.clone();
         c.ops("launch", json!({ "argv": argv, "cwd": cwd }), move |w, r| match r {
             Ok(v) => {
-                view::message(w, Level::Success, format!("Started pid {}. Pick it (or its game process) in the list.", v["pid"]));
+                view::message(
+                    w,
+                    Level::Success,
+                    crate::i18n::tf("Started pid {}. Pick it (or its game process) in the list.", &[&v["pid"]]),
+                );
                 let helpers = false;
                 let me2 = me.clone();
                 Timer::single_shot(Duration::from_millis(1200), move || me2.refresh_processes(helpers));
@@ -60,7 +64,7 @@ fn picker(app: &App, ctx: &Ctx) {
     let c = ctx.clone();
     app.on_detach(move || {
         c.quick("detach", json!({}), |w, r| match r {
-            Ok(_) => view::message(w, Level::Info, "Detached"),
+            Ok(_) => view::message(w, Level::Info, crate::i18n::t("Detached")),
             Err(e) => view::error(w, "Detach", &e),
         })
     });
@@ -76,7 +80,7 @@ fn picker(app: &App, ctx: &Ctx) {
     let c = ctx.clone();
     app.on_grant_access(move || {
         if let Some(w) = c.ui.upgrade() {
-            view::message(&w, Level::Info, "Running engram setup — confirm the password prompt…");
+            view::message(&w, Level::Info, crate::i18n::t("Running engram setup — confirm the password prompt…"));
         }
         c.background(launcher::grant_access);
     });
@@ -125,7 +129,11 @@ fn scan(app: &App, ctx: &Ctx) {
         let me = c.clone();
         c.quick("scan_undo", json!({}), move |w, r| match r {
             Ok(v) => {
-                view::message(w, Level::Info, format!("Restored {} result(s)", format::thousands(v["total"].as_u64().unwrap_or(0))));
+                view::message(
+                    w,
+                    Level::Info,
+                    crate::i18n::tf("Restored {} result(s)", &[&format::thousands(v["total"].as_u64().unwrap_or(0))]),
+                );
                 me.refresh_status();
             }
             Err(e) => view::error(w, "Undo", &e),
@@ -164,7 +172,7 @@ fn scan(app: &App, ctx: &Ctx) {
         let Some((addr, ty, value)) = view::with(|st| st.result(row as usize)) else { return };
         let ty = format::entry_type(&ty, &value);
         c.quick("table_add", json!({ "address": addr, "type": ty }), move |w, r| match r {
-            Ok(_) => view::message(w, Level::Success, format!("Added {addr} ({ty}) to the address table")),
+            Ok(_) => view::message(w, Level::Success, crate::i18n::tf("Added {} ({}) to the address table", &[&addr, &ty])),
             Err(e) => view::error(w, "Add", &e),
         });
     });
@@ -179,7 +187,7 @@ fn table(app: &App, ctx: &Ctx) {
             p["description"] = json!(description.trim());
         }
         c.quick("table_add", p, |w, r| match r {
-            Ok(_) => view::message(w, Level::Success, "Entry added"),
+            Ok(_) => view::message(w, Level::Success, crate::i18n::t("Entry added")),
             Err(e) => view::error(w, "Add", &e),
         });
     });
@@ -195,8 +203,8 @@ fn table(app: &App, ctx: &Ctx) {
         }
         let me = c.clone();
         c.quick("table_set", p, move |w, r| match r {
-            Ok(v) if writes => view::message(w, Level::Success, format!("Wrote {}", format::text(&v["value"]))),
-            Ok(_) => view::message(w, Level::Info, "Entry updated"),
+            Ok(v) if writes => view::message(w, Level::Success, crate::i18n::tf("Wrote {}", &[&format::text(&v["value"])])),
+            Ok(_) => view::message(w, Level::Info, crate::i18n::t("Entry updated")),
             Err(e) => {
                 view::error(w, "Update", &e);
                 me.refresh_table();
@@ -227,7 +235,7 @@ fn agents(app: &App, ctx: &Ctx) {
     app.on_set_policy(move |index| {
         let mode = ["ask", "allow", "deny"].get(index as usize).copied().unwrap_or("ask");
         c.quick("policy", json!({ "mode": mode }), |w, r| match r {
-            Ok(v) => view::message(w, Level::Info, format!("Agent writes: {}", s(&v["policy"]))),
+            Ok(v) => view::message(w, Level::Info, crate::i18n::tf("Agent writes: {}", &[&s(&v["policy"])])),
             Err(e) => view::error(w, "Policy", &e),
         });
     });

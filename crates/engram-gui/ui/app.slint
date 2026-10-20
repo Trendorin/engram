@@ -32,22 +32,22 @@ component StatusBar inherits Rectangle {
         }
         Muted {
             font-size: 11px;
-            text: App.connected ? "Engine connected" : "Engine offline";
+            text: App.connected ? @tr("Engine connected") : @tr("Engine offline");
             color: App.connected ? Tone.muted : Tone.error;
         }
         Muted {
             font-size: 11px;
-            text: "Access: \{App.access == "" ? "?" : App.access}";
+            text: @tr("Access: {}", App.access == "" ? "?" : App.access);
         }
         Muted {
             font-size: 11px;
-            text: "Agent writes: \{Choices.policies[App.policy-index]}";
+            text: @tr("Agent writes: {}", Choices.policies[App.policy-index]);
         }
     }
 }
 
 export component MainWindow inherits Window {
-    title: App.attached ? "Engram — \{App.target-name}" : "Engram";
+    title: App.attached ? @tr("Engram — {}", App.target-name) : @tr("Engram");
     icon: @image-url("../../../packaging/io.github.trendorin.Engram.svg");
     preferred-width: 1320px;
     preferred-height: 860px;

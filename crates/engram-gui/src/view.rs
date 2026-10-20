@@ -137,7 +137,7 @@ pub fn message(w: &MainWindow, level: Level, text: impl Into<SharedString>) {
 }
 
 pub fn error(w: &MainWindow, prefix: &str, e: &RpcError) {
-    message(w, Level::Error, format!("{prefix}: {}", format::error(e)));
+    message(w, Level::Error, format!("{}: {}", crate::i18n::t(prefix), format::error(e)));
 }
 
 // ---- status / scan --------------------------------------------------------------
@@ -239,9 +239,9 @@ pub fn apply_results(w: &MainWindow, v: &Value) {
     let shown = rows.len() as u64;
     with(|st| sync(&st.results, rows, |a, b| row_text(a, 0) == row_text(b, 0) && row_text(a, 1) == row_text(b, 1), same_row));
     let note = if total > shown {
-        format!("Showing the first {} of {}. Narrow down with Next scan.", format::thousands(shown), format::thousands(total))
+        crate::i18n::tf("Showing the first {} of {}. Narrow down with Next scan.", &[&format::thousands(shown), &format::thousands(total)])
     } else if total > 0 {
-        "Double-click a result to add it to the address table.".to_string()
+        crate::i18n::t("Double-click a result to add it to the address table.")
     } else {
         String::new()
     };

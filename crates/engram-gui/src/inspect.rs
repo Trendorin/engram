@@ -30,7 +30,7 @@ impl Ctx {
             "sample" => (
                 "sample",
                 json!({ "address": address, "type": ty, "samples": 20, "interval_ms": 150 }),
-                format!("Sampling {address} as {ty} for 3 s…"),
+                crate::i18n::tf("Sampling {} as {} for 3 s…", &[&address, &ty]),
                 true,
             ),
             "pointer_scan" => ("pointer_scan", json!({ "address": address, "limit": 25 }), format!("Pointer paths to {address}…"), true),
@@ -39,7 +39,7 @@ impl Ctx {
                 (
                     "watch",
                     json!({ "address": address, "size": size, "kind": kind, "duration_ms": 8000 }),
-                    format!("Watching {kind}s to {address} for 8 s — trigger the change in-game now"),
+                    crate::i18n::tf("Watching {}s to {} for 8 s — trigger the change in-game now", &[&kind, &address]),
                     true,
                 )
             }

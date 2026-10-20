@@ -23,6 +23,7 @@ engram config path
 | `workspace` | `~/.local/share/engram/workspace` | a path | Folder agents are started in |
 | `result_rows` | `1000` | 50–1000 | Scan results shown in the window |
 | `refresh_ms` | `600` | 200–5000 | How often live values in the window refresh |
+| `language` | `auto` | `auto`, `en`, `ru` | Language of the window; `auto` follows the system. Changes at once when saved |
 
 Saving in the window or with `engram config set` applies the timeout and the freeze interval
 to a running engine immediately. `policy` applies at the next engine start.

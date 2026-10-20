@@ -1,0 +1,549 @@
+# Russian translation of the Engram window.
+msgid ""
+msgstr ""
+"Project-Id-Version: engram-gui\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+msgctxt "AddressTable"
+msgid "Add"
+msgstr "Добавить"
+
+msgctxt "AddressTable"
+msgid "Address"
+msgstr "Адрес"
+
+msgctxt "AddressTable"
+msgid "Address table"
+msgstr "Таблица адресов"
+
+msgctxt "AddressTable"
+msgid "Address table — {}"
+msgstr "Таблица адресов — {}"
+
+msgctxt "AddressTable"
+msgid "Address, Game.exe+0x10, [[…]+0x18]"
+msgstr "Адрес, Game.exe+0x10, [[…]+0x18]"
+
+msgctxt "AddressTable"
+msgid "Apply"
+msgstr "Применить"
+
+msgctxt "AddressTable"
+msgid "Description"
+msgstr "Описание"
+
+msgctxt "AddressTable"
+msgid "Freeze"
+msgstr "Фикс."
+
+msgctxt "AddressTable"
+msgid "Inspect"
+msgstr "Изучить"
+
+msgctxt "AddressTable"
+msgid "New entry"
+msgstr "Новая запись"
+
+msgctxt "AddressTable"
+msgid "New value"
+msgstr "Новое значение"
+
+msgctxt "AddressTable"
+msgid "No saved addresses yet.\nDouble-click a scan result, or let your agent call table_add."
+msgstr "Сохранённых адресов пока нет.\nДважды щёлкните результат поиска или пусть агент вызовет table_add."
+
+msgctxt "AddressTable"
+msgid "Remove"
+msgstr "Удалить"
+
+msgctxt "AddressTable"
+msgid "Type"
+msgstr "Тип"
+
+msgctxt "AddressTable"
+msgid "Value"
+msgstr "Значение"
+
+msgctxt "AgentTab"
+msgid "Activity"
+msgstr "Действия"
+
+msgctxt "AgentTab"
+msgid "Agent memory writes:"
+msgstr "Запись в память агентами:"
+
+msgctxt "AgentTab"
+msgid "Agents can write memory, freeze values and trace threads without asking."
+msgstr "Агенты могут писать в память, замораживать значения и следить за потоками без вопросов."
+
+msgctxt "AgentTab"
+msgid "Nothing yet. What agents do appears here live."
+msgstr "Пока пусто. Здесь сразу видно, что делают агенты."
+
+msgctxt "AgentTab"
+msgid "Open a coding agent next to this window. It works on the same session you see here, and every memory write waits for your approval."
+msgstr "Откройте агента для кода рядом с окном. Он работает в той же сессии, что вы видите, и каждая запись в память ждёт вашего подтверждения."
+
+msgctxt "AgentTab"
+msgid "Open terminal"
+msgstr "Открыть терминал"
+
+msgctxt "AgentTab"
+msgid "Workspace: {}"
+msgstr "Рабочая папка: {}"
+
+msgctxt "AgentTab"
+msgid "newest first"
+msgstr "новые сверху"
+
+msgctxt "AgentTab"
+msgid "says"
+msgstr "сообщает"
+
+msgctxt "App"
+msgid "All types"
+msgstr "Все типы"
+
+msgctxt "App"
+msgid "Shell"
+msgstr "Оболочка"
+
+msgctxt "ApprovalBar"
+msgid "(+{} more waiting)"
+msgstr "(ещё ждут: {})"
+
+msgctxt "ApprovalBar"
+msgid "Allow"
+msgstr "Разрешить"
+
+msgctxt "ApprovalBar"
+msgid "Allow for session"
+msgstr "На эту сессию"
+
+msgctxt "ApprovalBar"
+msgid "Approval needed:"
+msgstr "Нужно подтверждение:"
+
+msgctxt "ApprovalBar"
+msgid "Deny"
+msgstr "Отклонить"
+
+msgctxt "ApprovalBar"
+msgid "wants to run {}"
+msgstr "хочет выполнить {}"
+
+msgctxt "Choices"
+msgid "Allow all"
+msgstr "Разрешать всё"
+
+msgctxt "Choices"
+msgid "Ask me"
+msgstr "Спрашивать"
+
+msgctxt "Choices"
+msgid "Deny all"
+msgstr "Запретить всё"
+
+msgctxt "InspectTab"
+msgid "Add to table"
+msgstr "В таблицу"
+
+msgctxt "InspectTab"
+msgid "Address: 0x7f12a0, Game.exe+0x1A2B30, [[Game.exe+0x10]+0x18]"
+msgstr "Адрес: 0x7f12a0, Game.exe+0x1A2B30, [[Game.exe+0x10]+0x18]"
+
+msgctxt "InspectTab"
+msgid "Analyze"
+msgstr "Анализ"
+
+msgctxt "InspectTab"
+msgid "Disassemble"
+msgstr "Дизассемблер"
+
+msgctxt "InspectTab"
+msgid "Dissect"
+msgstr "Структура"
+
+msgctxt "InspectTab"
+msgid "Find accesses"
+msgstr "Кто читает"
+
+msgctxt "InspectTab"
+msgid "Find writes"
+msgstr "Кто пишет"
+
+msgctxt "InspectTab"
+msgid "Hex"
+msgstr "Hex"
+
+msgctxt "InspectTab"
+msgid "Output"
+msgstr "Вывод"
+
+msgctxt "InspectTab"
+msgid "Pick a scan result or table entry and choose an action.\n\nAnalyze      what the address is: region, module+offset, every type\nDissect      guess the structure around it (start a bit before)\nSample       watch the value change over a few seconds\nPointer scan find a module-based path that survives restarts\nFind writes  hardware watchpoint: trigger the change in-game while it runs"
+msgstr "Выберите результат поиска или запись таблицы и действие.\n\nАнализ        что за адрес: регион, модуль+смещение, все типы\nСтруктура     угадать структуру вокруг (начните чуть раньше)\nЗамер         понаблюдать, как значение меняется несколько секунд\nУказатели     найти путь от модуля, переживающий перезапуск\nКто пишет     аппаратная точка: вызовите изменение в игре, пока она работает"
+
+msgctxt "InspectTab"
+msgid "Pointer scan"
+msgstr "Указатели"
+
+msgctxt "InspectTab"
+msgid "Sample"
+msgstr "Замер"
+
+msgctxt "MainWindow"
+msgid "Engram"
+msgstr "Engram"
+
+msgctxt "MainWindow"
+msgid "Engram — {}"
+msgstr "Engram — {}"
+
+msgctxt "PathRow"
+msgid "Open"
+msgstr "Открыть"
+
+msgctxt "ProcessPicker"
+msgid "/path/to/game --args   (Engram can always read programs it started)"
+msgstr "/путь/к/игре --аргументы   (программы, запущенные из Engram, он читает всегда)"
+
+msgctxt "ProcessPicker"
+msgid "Attach"
+msgstr "Подключиться"
+
+msgctxt "ProcessPicker"
+msgid "Cancel"
+msgstr "Отмена"
+
+msgctxt "ProcessPicker"
+msgid "Command line"
+msgstr "Командная строка"
+
+msgctxt "ProcessPicker"
+msgid "Filter by name or command line"
+msgstr "Фильтр по имени или командной строке"
+
+msgctxt "ProcessPicker"
+msgid "Kind"
+msgstr "Тип"
+
+msgctxt "ProcessPicker"
+msgid "Loading…"
+msgstr "Загрузка…"
+
+msgctxt "ProcessPicker"
+msgid "Memory"
+msgstr "Память"
+
+msgctxt "ProcessPicker"
+msgid "Name"
+msgstr "Имя"
+
+msgctxt "ProcessPicker"
+msgid "Or start a program:"
+msgstr "Или запустить программу:"
+
+msgctxt "ProcessPicker"
+msgid "PID"
+msgstr "PID"
+
+msgctxt "ProcessPicker"
+msgid "Refresh"
+msgstr "Обновить"
+
+msgctxt "ProcessPicker"
+msgid "Select a process"
+msgstr "Выбор процесса"
+
+msgctxt "ProcessPicker"
+msgid "Show runtime helpers"
+msgstr "Показывать служебные процессы"
+
+msgctxt "ProcessPicker"
+msgid "Start"
+msgstr "Запустить"
+
+msgctxt "ScanPanel"
+msgid "1 result"
+msgstr "1 результат"
+
+msgctxt "ScanPanel"
+msgid "Add to table"
+msgstr "В таблицу"
+
+msgctxt "ScanPanel"
+msgid "Address"
+msgstr "Адрес"
+
+msgctxt "ScanPanel"
+msgid "Aligned"
+msgstr "С выравниванием"
+
+msgctxt "ScanPanel"
+msgid "Bytes, e.g. 48 8B ?? 05"
+msgstr "Байты, например 48 8B ?? 05"
+
+msgctxt "ScanPanel"
+msgid "Cancel"
+msgstr "Отмена"
+
+msgctxt "ScanPanel"
+msgid "First scan"
+msgstr "Первый поиск"
+
+msgctxt "ScanPanel"
+msgid "From"
+msgstr "От"
+
+msgctxt "ScanPanel"
+msgid "Inspect"
+msgstr "Изучить"
+
+msgctxt "ScanPanel"
+msgid "New scan"
+msgstr "Новый поиск"
+
+msgctxt "ScanPanel"
+msgid "Next scan"
+msgstr "Следующий поиск"
+
+msgctxt "ScanPanel"
+msgid "No scan yet"
+msgstr "Поиска ещё не было"
+
+msgctxt "ScanPanel"
+msgid "No value needed"
+msgstr "Значение не нужно"
+
+msgctxt "ScanPanel"
+msgid "Pointer scan…"
+msgstr "Поиск указателей…"
+
+msgctxt "ScanPanel"
+msgid "Previous"
+msgstr "Прежнее"
+
+msgctxt "ScanPanel"
+msgid "Scanning…"
+msgstr "Поиск…"
+
+msgctxt "ScanPanel"
+msgid "Text"
+msgstr "Текст"
+
+msgctxt "ScanPanel"
+msgid "To"
+msgstr "До"
+
+msgctxt "ScanPanel"
+msgid "Type"
+msgstr "Тип"
+
+msgctxt "ScanPanel"
+msgid "Undo"
+msgstr "Отмена"
+
+msgctxt "ScanPanel"
+msgid "Value"
+msgstr "Значение"
+
+msgctxt "ScanPanel"
+msgid "Value scan"
+msgstr "Поиск значения"
+
+msgctxt "ScanPanel"
+msgid "Watching…"
+msgstr "Слежение…"
+
+msgctxt "ScanPanel"
+msgid "Where"
+msgstr "Где"
+
+msgctxt "ScanPanel"
+msgid "Writable only"
+msgstr "Только записываемые"
+
+msgctxt "ScanPanel"
+msgid "step {}"
+msgstr "шаг {}"
+
+msgctxt "ScanPanel"
+msgid "{} results"
+msgstr "результатов: {}"
+
+msgctxt "SettingsTab"
+msgid "About"
+msgstr "О программе"
+
+msgctxt "SettingsTab"
+msgid "Agent for \"Open terminal\""
+msgstr "Агент для «Открыть терминал»"
+
+msgctxt "SettingsTab"
+msgid "Agent writes when Engram starts"
+msgstr "Запись агентов при запуске Engram"
+
+msgctxt "SettingsTab"
+msgid "Agents"
+msgstr "Агенты"
+
+msgctxt "SettingsTab"
+msgid "Data"
+msgstr "Данные"
+
+msgctxt "SettingsTab"
+msgid "Engram {}"
+msgstr "Engram {}"
+
+msgctxt "SettingsTab"
+msgid "Logs"
+msgstr "Журналы"
+
+msgctxt "SettingsTab"
+msgid "Refresh live values (ms)"
+msgstr "Обновление значений (мс)"
+
+msgctxt "SettingsTab"
+msgid "Restore defaults"
+msgstr "По умолчанию"
+
+msgctxt "SettingsTab"
+msgid "Rewrite frozen values (ms)"
+msgstr "Перезапись замороженного (мс)"
+
+msgctxt "SettingsTab"
+msgid "Safety"
+msgstr "Безопасность"
+
+msgctxt "SettingsTab"
+msgid "Save"
+msgstr "Сохранить"
+
+msgctxt "SettingsTab"
+msgid "Scan results shown"
+msgstr "Показывать результатов"
+
+msgctxt "SettingsTab"
+msgid "Settings"
+msgstr "Настройки"
+
+msgctxt "SettingsTab"
+msgid "Terminal"
+msgstr "Терминал"
+
+msgctxt "SettingsTab"
+msgid "Wait for my answer (s)"
+msgstr "Ждать моего ответа (с)"
+
+msgctxt "SettingsTab"
+msgid "Window and engine"
+msgstr "Окно и движок"
+
+msgctxt "SettingsTab"
+msgid "Workspace folder"
+msgstr "Рабочая папка"
+
+msgctxt "SettingsTab"
+msgid "auto: {}"
+msgstr "авто: {}"
+
+msgctxt "SettingsTab"
+msgid "memory access: {}"
+msgstr "доступ к памяти: {}"
+
+msgctxt "SettingsTab"
+msgid "none found — enter a command"
+msgstr "не найден — введите команду"
+
+msgctxt "SidePanel"
+msgid "Agent"
+msgstr "Агент"
+
+msgctxt "SidePanel"
+msgid "Agent ({})"
+msgstr "Агент ({})"
+
+msgctxt "SidePanel"
+msgid "Inspect"
+msgstr "Изучить"
+
+msgctxt "SidePanel"
+msgid "Settings"
+msgstr "Настройки"
+
+msgctxt "StatusBar"
+msgid "Access: {}"
+msgstr "Доступ: {}"
+
+msgctxt "StatusBar"
+msgid "Agent writes: {}"
+msgstr "Запись агентов: {}"
+
+msgctxt "StatusBar"
+msgid "Engine connected"
+msgstr "Движок подключён"
+
+msgctxt "StatusBar"
+msgid "Engine offline"
+msgstr "Движок не отвечает"
+
+msgctxt "TopBar"
+msgid "  ·  paused"
+msgstr "  ·  пауза"
+
+msgctxt "TopBar"
+msgid "Change process…"
+msgstr "Сменить процесс…"
+
+msgctxt "TopBar"
+msgid "Connecting to the Engram engine…"
+msgstr "Подключение к движку Engram…"
+
+msgctxt "TopBar"
+msgid "Detach"
+msgstr "Отключиться"
+
+msgctxt "TopBar"
+msgid "Grant access…"
+msgstr "Дать доступ…"
+
+msgctxt "TopBar"
+msgid "Kernel forbids ptrace (ptrace_scope=3)"
+msgstr "Ядро запрещает ptrace (ptrace_scope=3)"
+
+msgctxt "TopBar"
+msgid "No process attached"
+msgstr "Процесс не выбран"
+
+msgctxt "TopBar"
+msgid "Only programs started by Engram can be read"
+msgstr "Читать можно только программы, запущенные из Engram"
+
+msgctxt "TopBar"
+msgid "Pause"
+msgstr "Пауза"
+
+msgctxt "TopBar"
+msgid "Resume"
+msgstr "Продолжить"
+
+msgctxt "TopBar"
+msgid "Select process…"
+msgstr "Выбрать процесс…"
+
+msgctxt "TopBar"
+msgid "pid {}"
+msgstr "pid {}"
+
+msgctxt "SettingsTab"
+msgid "Language"
+msgstr "Язык"
+
+msgctxt "SettingsTab"
+msgid "Follow system"
+msgstr "Как в системе"

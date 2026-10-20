@@ -76,7 +76,7 @@ export global App {
     in property <int> scan-step;
     in property <int> scan-total;
     in property <string> scan-types-text;
-    in property <[string]> scan-type-filters: ["All types"];
+    in property <[string]> scan-type-filters: [@tr("All types")];
     in-out property <int> scan-type-filter;
     in property <bool> can-undo;
     in property <[[StandardListViewItem]]> results;
@@ -89,7 +89,7 @@ export global App {
     // ---- agent ------------------------------------------------------------------------
     in property <[ApprovalRow]> approvals;
     in property <[ActivityRow]> activity;
-    in property <[string]> agents: ["Shell"];
+    in property <[string]> agents: [@tr("Shell")];
     in property <string> workspace;
 
     /// 0 Agent, 1 Inspect, 2 Settings
@@ -112,6 +112,7 @@ export global App {
     in-out property <int> set-rows: 1000;
     in-out property <int> set-refresh: 600;
     in-out property <int> set-freeze: 100;
+    in-out property <int> set-language-index;
     in property <string> terminal-detected;
     in property <string> workspace-default;
     in property <string> settings-note;
@@ -160,5 +161,5 @@ export global Choices {
     out property <[string]> first-compares: ["exact", "unknown", "greater", "less", "between", "not_equal"];
     out property <[string]> next-compares: ["exact", "changed", "unchanged", "increased", "decreased", "increased_by", "decreased_by", "greater", "less", "between", "not_equal"];
     out property <[string]> value-types: ["i32", "i64", "f32", "f64", "i16", "i8", "u8", "u16", "u32", "u64", "ptr", "bytes:8", "str:32", "str16:32"];
-    out property <[string]> policies: ["Ask me", "Allow all", "Deny all"];
+    out property <[string]> policies: [@tr("Ask me"), @tr("Allow all"), @tr("Deny all")];
 }

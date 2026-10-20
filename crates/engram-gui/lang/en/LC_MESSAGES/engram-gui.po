@@ -1,0 +1,549 @@
+# English (the source language): every string stays as written.
+msgid ""
+msgstr ""
+"Project-Id-Version: engram-gui\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "AddressTable"
+msgid "Add"
+msgstr ""
+
+msgctxt "AddressTable"
+msgid "Address"
+msgstr ""
+
+msgctxt "AddressTable"
+msgid "Address table"
+msgstr ""
+
+msgctxt "AddressTable"
+msgid "Address table — {}"
+msgstr ""
+
+msgctxt "AddressTable"
+msgid "Address, Game.exe+0x10, [[…]+0x18]"
+msgstr ""
+
+msgctxt "AddressTable"
+msgid "Apply"
+msgstr ""
+
+msgctxt "AddressTable"
+msgid "Description"
+msgstr ""
+
+msgctxt "AddressTable"
+msgid "Freeze"
+msgstr ""
+
+msgctxt "AddressTable"
+msgid "Inspect"
+msgstr ""
+
+msgctxt "AddressTable"
+msgid "New entry"
+msgstr ""
+
+msgctxt "AddressTable"
+msgid "New value"
+msgstr ""
+
+msgctxt "AddressTable"
+msgid "No saved addresses yet.\nDouble-click a scan result, or let your agent call table_add."
+msgstr ""
+
+msgctxt "AddressTable"
+msgid "Remove"
+msgstr ""
+
+msgctxt "AddressTable"
+msgid "Type"
+msgstr ""
+
+msgctxt "AddressTable"
+msgid "Value"
+msgstr ""
+
+msgctxt "AgentTab"
+msgid "Activity"
+msgstr ""
+
+msgctxt "AgentTab"
+msgid "Agent memory writes:"
+msgstr ""
+
+msgctxt "AgentTab"
+msgid "Agents can write memory, freeze values and trace threads without asking."
+msgstr ""
+
+msgctxt "AgentTab"
+msgid "Nothing yet. What agents do appears here live."
+msgstr ""
+
+msgctxt "AgentTab"
+msgid "Open a coding agent next to this window. It works on the same session you see here, and every memory write waits for your approval."
+msgstr ""
+
+msgctxt "AgentTab"
+msgid "Open terminal"
+msgstr ""
+
+msgctxt "AgentTab"
+msgid "Workspace: {}"
+msgstr ""
+
+msgctxt "AgentTab"
+msgid "newest first"
+msgstr ""
+
+msgctxt "AgentTab"
+msgid "says"
+msgstr ""
+
+msgctxt "App"
+msgid "All types"
+msgstr ""
+
+msgctxt "App"
+msgid "Shell"
+msgstr ""
+
+msgctxt "ApprovalBar"
+msgid "(+{} more waiting)"
+msgstr ""
+
+msgctxt "ApprovalBar"
+msgid "Allow"
+msgstr ""
+
+msgctxt "ApprovalBar"
+msgid "Allow for session"
+msgstr ""
+
+msgctxt "ApprovalBar"
+msgid "Approval needed:"
+msgstr ""
+
+msgctxt "ApprovalBar"
+msgid "Deny"
+msgstr ""
+
+msgctxt "ApprovalBar"
+msgid "wants to run {}"
+msgstr ""
+
+msgctxt "Choices"
+msgid "Allow all"
+msgstr ""
+
+msgctxt "Choices"
+msgid "Ask me"
+msgstr ""
+
+msgctxt "Choices"
+msgid "Deny all"
+msgstr ""
+
+msgctxt "InspectTab"
+msgid "Add to table"
+msgstr ""
+
+msgctxt "InspectTab"
+msgid "Address: 0x7f12a0, Game.exe+0x1A2B30, [[Game.exe+0x10]+0x18]"
+msgstr ""
+
+msgctxt "InspectTab"
+msgid "Analyze"
+msgstr ""
+
+msgctxt "InspectTab"
+msgid "Disassemble"
+msgstr ""
+
+msgctxt "InspectTab"
+msgid "Dissect"
+msgstr ""
+
+msgctxt "InspectTab"
+msgid "Find accesses"
+msgstr ""
+
+msgctxt "InspectTab"
+msgid "Find writes"
+msgstr ""
+
+msgctxt "InspectTab"
+msgid "Hex"
+msgstr ""
+
+msgctxt "InspectTab"
+msgid "Output"
+msgstr ""
+
+msgctxt "InspectTab"
+msgid "Pick a scan result or table entry and choose an action.\n\nAnalyze      what the address is: region, module+offset, every type\nDissect      guess the structure around it (start a bit before)\nSample       watch the value change over a few seconds\nPointer scan find a module-based path that survives restarts\nFind writes  hardware watchpoint: trigger the change in-game while it runs"
+msgstr ""
+
+msgctxt "InspectTab"
+msgid "Pointer scan"
+msgstr ""
+
+msgctxt "InspectTab"
+msgid "Sample"
+msgstr ""
+
+msgctxt "MainWindow"
+msgid "Engram"
+msgstr ""
+
+msgctxt "MainWindow"
+msgid "Engram — {}"
+msgstr ""
+
+msgctxt "PathRow"
+msgid "Open"
+msgstr ""
+
+msgctxt "ProcessPicker"
+msgid "/path/to/game --args   (Engram can always read programs it started)"
+msgstr ""
+
+msgctxt "ProcessPicker"
+msgid "Attach"
+msgstr ""
+
+msgctxt "ProcessPicker"
+msgid "Cancel"
+msgstr ""
+
+msgctxt "ProcessPicker"
+msgid "Command line"
+msgstr ""
+
+msgctxt "ProcessPicker"
+msgid "Filter by name or command line"
+msgstr ""
+
+msgctxt "ProcessPicker"
+msgid "Kind"
+msgstr ""
+
+msgctxt "ProcessPicker"
+msgid "Loading…"
+msgstr ""
+
+msgctxt "ProcessPicker"
+msgid "Memory"
+msgstr ""
+
+msgctxt "ProcessPicker"
+msgid "Name"
+msgstr ""
+
+msgctxt "ProcessPicker"
+msgid "Or start a program:"
+msgstr ""
+
+msgctxt "ProcessPicker"
+msgid "PID"
+msgstr ""
+
+msgctxt "ProcessPicker"
+msgid "Refresh"
+msgstr ""
+
+msgctxt "ProcessPicker"
+msgid "Select a process"
+msgstr ""
+
+msgctxt "ProcessPicker"
+msgid "Show runtime helpers"
+msgstr ""
+
+msgctxt "ProcessPicker"
+msgid "Start"
+msgstr ""
+
+msgctxt "ScanPanel"
+msgid "1 result"
+msgstr ""
+
+msgctxt "ScanPanel"
+msgid "Add to table"
+msgstr ""
+
+msgctxt "ScanPanel"
+msgid "Address"
+msgstr ""
+
+msgctxt "ScanPanel"
+msgid "Aligned"
+msgstr ""
+
+msgctxt "ScanPanel"
+msgid "Bytes, e.g. 48 8B ?? 05"
+msgstr ""
+
+msgctxt "ScanPanel"
+msgid "Cancel"
+msgstr ""
+
+msgctxt "ScanPanel"
+msgid "First scan"
+msgstr ""
+
+msgctxt "ScanPanel"
+msgid "From"
+msgstr ""
+
+msgctxt "ScanPanel"
+msgid "Inspect"
+msgstr ""
+
+msgctxt "ScanPanel"
+msgid "New scan"
+msgstr ""
+
+msgctxt "ScanPanel"
+msgid "Next scan"
+msgstr ""
+
+msgctxt "ScanPanel"
+msgid "No scan yet"
+msgstr ""
+
+msgctxt "ScanPanel"
+msgid "No value needed"
+msgstr ""
+
+msgctxt "ScanPanel"
+msgid "Pointer scan…"
+msgstr ""
+
+msgctxt "ScanPanel"
+msgid "Previous"
+msgstr ""
+
+msgctxt "ScanPanel"
+msgid "Scanning…"
+msgstr ""
+
+msgctxt "ScanPanel"
+msgid "Text"
+msgstr ""
+
+msgctxt "ScanPanel"
+msgid "To"
+msgstr ""
+
+msgctxt "ScanPanel"
+msgid "Type"
+msgstr ""
+
+msgctxt "ScanPanel"
+msgid "Undo"
+msgstr ""
+
+msgctxt "ScanPanel"
+msgid "Value"
+msgstr ""
+
+msgctxt "ScanPanel"
+msgid "Value scan"
+msgstr ""
+
+msgctxt "ScanPanel"
+msgid "Watching…"
+msgstr ""
+
+msgctxt "ScanPanel"
+msgid "Where"
+msgstr ""
+
+msgctxt "ScanPanel"
+msgid "Writable only"
+msgstr ""
+
+msgctxt "ScanPanel"
+msgid "step {}"
+msgstr ""
+
+msgctxt "ScanPanel"
+msgid "{} results"
+msgstr ""
+
+msgctxt "SettingsTab"
+msgid "About"
+msgstr ""
+
+msgctxt "SettingsTab"
+msgid "Agent for \"Open terminal\""
+msgstr ""
+
+msgctxt "SettingsTab"
+msgid "Agent writes when Engram starts"
+msgstr ""
+
+msgctxt "SettingsTab"
+msgid "Agents"
+msgstr ""
+
+msgctxt "SettingsTab"
+msgid "Data"
+msgstr ""
+
+msgctxt "SettingsTab"
+msgid "Engram {}"
+msgstr ""
+
+msgctxt "SettingsTab"
+msgid "Logs"
+msgstr ""
+
+msgctxt "SettingsTab"
+msgid "Refresh live values (ms)"
+msgstr ""
+
+msgctxt "SettingsTab"
+msgid "Restore defaults"
+msgstr ""
+
+msgctxt "SettingsTab"
+msgid "Rewrite frozen values (ms)"
+msgstr ""
+
+msgctxt "SettingsTab"
+msgid "Safety"
+msgstr ""
+
+msgctxt "SettingsTab"
+msgid "Save"
+msgstr ""
+
+msgctxt "SettingsTab"
+msgid "Scan results shown"
+msgstr ""
+
+msgctxt "SettingsTab"
+msgid "Settings"
+msgstr ""
+
+msgctxt "SettingsTab"
+msgid "Terminal"
+msgstr ""
+
+msgctxt "SettingsTab"
+msgid "Wait for my answer (s)"
+msgstr ""
+
+msgctxt "SettingsTab"
+msgid "Window and engine"
+msgstr ""
+
+msgctxt "SettingsTab"
+msgid "Workspace folder"
+msgstr ""
+
+msgctxt "SettingsTab"
+msgid "auto: {}"
+msgstr ""
+
+msgctxt "SettingsTab"
+msgid "memory access: {}"
+msgstr ""
+
+msgctxt "SettingsTab"
+msgid "none found — enter a command"
+msgstr ""
+
+msgctxt "SidePanel"
+msgid "Agent"
+msgstr ""
+
+msgctxt "SidePanel"
+msgid "Agent ({})"
+msgstr ""
+
+msgctxt "SidePanel"
+msgid "Inspect"
+msgstr ""
+
+msgctxt "SidePanel"
+msgid "Settings"
+msgstr ""
+
+msgctxt "StatusBar"
+msgid "Access: {}"
+msgstr ""
+
+msgctxt "StatusBar"
+msgid "Agent writes: {}"
+msgstr ""
+
+msgctxt "StatusBar"
+msgid "Engine connected"
+msgstr ""
+
+msgctxt "StatusBar"
+msgid "Engine offline"
+msgstr ""
+
+msgctxt "TopBar"
+msgid "  ·  paused"
+msgstr ""
+
+msgctxt "TopBar"
+msgid "Change process…"
+msgstr ""
+
+msgctxt "TopBar"
+msgid "Connecting to the Engram engine…"
+msgstr ""
+
+msgctxt "TopBar"
+msgid "Detach"
+msgstr ""
+
+msgctxt "TopBar"
+msgid "Grant access…"
+msgstr ""
+
+msgctxt "TopBar"
+msgid "Kernel forbids ptrace (ptrace_scope=3)"
+msgstr ""
+
+msgctxt "TopBar"
+msgid "No process attached"
+msgstr ""
+
+msgctxt "TopBar"
+msgid "Only programs started by Engram can be read"
+msgstr ""
+
+msgctxt "TopBar"
+msgid "Pause"
+msgstr ""
+
+msgctxt "TopBar"
+msgid "Resume"
+msgstr ""
+
+msgctxt "TopBar"
+msgid "Select process…"
+msgstr ""
+
+msgctxt "TopBar"
+msgid "pid {}"
+msgstr ""
+
+msgctxt "SettingsTab"
+msgid "Language"
+msgstr ""
+
+msgctxt "SettingsTab"
+msgid "Follow system"
+msgstr ""

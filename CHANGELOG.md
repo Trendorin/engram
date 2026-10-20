@@ -5,6 +5,15 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.1.0] — 2026-10-20
+
+### Added
+- **Language of the window** (Settings → Window and engine → Language): follow the system, English or
+  Russian. It changes at once when saved; the same setting is `engram config set language ru`. The
+  whole window is translated, including the messages it shows. The command line, the MCP tools and the
+  texts agents see stay English.
+
+
 ## [1.0.1] — 2026-10-20
 
 Security and correctness fixes after an independent review.
@@ -90,6 +99,7 @@ First release.
 - Settings in `~/.config/engram/config.json`, editable with `engram config` and in the window.
 - `engram uninstall` removes exactly the installed files (manifest), optionally user data.
 
-[Unreleased]: https://github.com/Trendorin/engram/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/Trendorin/engram/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/Trendorin/engram/releases/tag/v1.1.0
 [1.0.1]: https://github.com/Trendorin/engram/releases/tag/v1.0.1
 [1.0.0]: https://github.com/Trendorin/engram/releases/tag/v1.0.0

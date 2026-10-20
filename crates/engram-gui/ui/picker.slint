@@ -46,17 +46,17 @@ export component ProcessPicker inherits Rectangle {
                 HorizontalLayout {
                     spacing: 8px;
                     Heading {
-                        text: "Select a process";
+                        text: @tr("Select a process");
                         font-size: 16px;
                     }
                     Rectangle {
                         horizontal-stretch: 1;
                     }
                     Muted {
-                        text: App.picker-loading ? "Loading…" : App.processes-note;
+                        text: App.picker-loading ? @tr("Loading…") : App.processes-note;
                     }
                     Button {
-                        text: "Refresh";
+                        text: @tr("Refresh");
                         clicked => {
                             App.refresh-processes(helpers.checked);
                         }
@@ -66,7 +66,7 @@ export component ProcessPicker inherits Rectangle {
                 HorizontalLayout {
                     spacing: 10px;
                     filter := LineEdit {
-                        placeholder-text: "Filter by name or command line";
+                        placeholder-text: @tr("Filter by name or command line");
                         init => {
                             self.focus();
                         }
@@ -83,7 +83,7 @@ export component ProcessPicker inherits Rectangle {
                     }
 
                     helpers := CheckBox {
-                        text: "Show runtime helpers";
+                        text: @tr("Show runtime helpers");
                         toggled => {
                             App.refresh-processes(self.checked);
                         }
@@ -93,11 +93,11 @@ export component ProcessPicker inherits Rectangle {
                 table := StandardTableView {
                     vertical-stretch: 1;
                     columns: [
-                        { title: "Name", horizontal-stretch: 1, min-width: 180px },
-                        { title: "PID", min-width: 70px },
-                        { title: "Kind", min-width: 70px },
-                        { title: "Memory", min-width: 80px },
-                        { title: "Command line", horizontal-stretch: 2, min-width: 200px },
+                        { title: @tr("Name"), horizontal-stretch: 1, min-width: 180px },
+                        { title: @tr("PID"), min-width: 70px },
+                        { title: @tr("Kind"), min-width: 70px },
+                        { title: @tr("Memory"), min-width: 80px },
+                        { title: @tr("Command line"), horizontal-stretch: 2, min-width: 200px },
                     ];
                     rows: App.processes;
                     row-pointer-event(row, event, pos) => {
@@ -118,10 +118,10 @@ export component ProcessPicker inherits Rectangle {
                 HorizontalLayout {
                     spacing: 8px;
                     Muted {
-                        text: "Or start a program:";
+                        text: @tr("Or start a program:");
                     }
                     command := LineEdit {
-                        placeholder-text: "/path/to/game --args   (Engram can always read programs it started)";
+                        placeholder-text: @tr("/path/to/game --args   (Engram can always read programs it started)");
                         accepted => {
                             if (self.text != "") {
                                 App.launch(self.text);
@@ -129,7 +129,7 @@ export component ProcessPicker inherits Rectangle {
                         }
                     }
                     Button {
-                        text: "Start";
+                        text: @tr("Start");
                         enabled: command.text != "";
                         clicked => {
                             App.launch(command.text);
@@ -141,13 +141,13 @@ export component ProcessPicker inherits Rectangle {
                     spacing: 8px;
                     alignment: end;
                     Button {
-                        text: "Cancel";
+                        text: @tr("Cancel");
                         clicked => {
                             root.close();
                         }
                     }
                     Button {
-                        text: "Attach";
+                        text: @tr("Attach");
                         primary: true;
                         enabled: table.current-row >= 0 && table.current-row < App.processes.length;
                         clicked => {

@@ -5,7 +5,7 @@ import { App, Choices, Tone } from "state.slint";
 import { Heading, Muted } from "common.slint";
 
 export component ScanPanel inherits GroupBox {
-    title: "Value scan";
+    title: @tr("Value scan");
 
     property <[string]> compares: App.has-scan ? Choices.next-compares : Choices.first-compares;
     property <string> compare: compares[compare-box.current-index];
@@ -35,7 +35,7 @@ export component ScanPanel inherits GroupBox {
             spacing: 8px;
             value := LineEdit {
                 enabled: root.needs-value;
-                placeholder-text: !root.needs-value ? "No value needed" : root.compare == "between" ? "From" : root.scan-type == "bytes" ? "Bytes, e.g. 48 8B ?? 05" : root.scan-type == "string" || root.scan-type == "string16" ? "Text" : "Value";
+                placeholder-text: !root.needs-value ? @tr("No value needed") : root.compare == "between" ? @tr("From") : root.scan-type == "bytes" ? @tr("Bytes, e.g. 48 8B ?? 05") : root.scan-type == "string" || root.scan-type == "string16" ? @tr("Text") : @tr("Value");
                 accepted => {
                     root.submit();
                 }
@@ -46,7 +46,7 @@ export component ScanPanel inherits GroupBox {
             value2 := LineEdit {
                 visible: root.compare == "between";
                 width: root.compare == "between" ? self.preferred-width : 0;
-                placeholder-text: "To";
+                placeholder-text: @tr("To");
                 accepted => {
                     root.submit();
                 }
@@ -65,7 +65,7 @@ export component ScanPanel inherits GroupBox {
         HorizontalLayout {
             spacing: 8px;
             Button {
-                text: App.has-scan ? "New scan" : "First scan";
+                text: App.has-scan ? @tr("New scan") : @tr("First scan");
                 primary: !App.has-scan;
                 enabled: App.attached && !App.busy;
                 clicked => {
@@ -78,7 +78,7 @@ export component ScanPanel inherits GroupBox {
                 }
             }
             Button {
-                text: "Next scan";
+                text: @tr("Next scan");
                 primary: App.has-scan;
                 enabled: App.has-scan && !App.busy;
                 clicked => {
@@ -86,7 +86,7 @@ export component ScanPanel inherits GroupBox {
                 }
             }
             Button {
-                text: "Undo";
+                text: @tr("Undo");
                 enabled: App.can-undo && !App.busy;
                 clicked => {
                     App.undo-scan();
@@ -97,13 +97,13 @@ export component ScanPanel inherits GroupBox {
             }
             writable := CheckBox {
                 horizontal-stretch: 0;
-                text: "Writable only";
+                text: @tr("Writable only");
                 checked: true;
                 enabled: !App.has-scan;
             }
             aligned := CheckBox {
                 horizontal-stretch: 0;
-                text: "Aligned";
+                text: @tr("Aligned");
                 checked: true;
                 enabled: !App.has-scan;
             }
@@ -115,7 +115,7 @@ export component ScanPanel inherits GroupBox {
         if App.busy: HorizontalLayout {
             spacing: 8px;
             Muted {
-                text: App.busy-op == "pointer_scan" ? "Pointer scan…" : App.busy-op == "watch" ? "Watching…" : "Scanning…";
+                text: App.busy-op == "pointer_scan" ? @tr("Pointer scan…") : App.busy-op == "watch" ? @tr("Watching…") : @tr("Scanning…");
             }
             VerticalLayout {
                 alignment: center;
@@ -125,7 +125,7 @@ export component ScanPanel inherits GroupBox {
                 }
             }
             Button {
-                text: "Cancel";
+                text: @tr("Cancel");
                 clicked => {
                     App.cancel();
                 }
@@ -135,10 +135,10 @@ export component ScanPanel inherits GroupBox {
         HorizontalLayout {
             spacing: 10px;
             Heading {
-                text: !App.has-scan ? "No scan yet" : App.scan-total == 1 ? "1 result" : "\{App.scan-total} results";
+                text: !App.has-scan ? @tr("No scan yet") : App.scan-total == 1 ? @tr("1 result") : @tr("{} results", App.scan-total);
             }
             if App.has-scan: Muted {
-                text: "step \{App.scan-step}";
+                text: @tr("step {}", App.scan-step);
             }
             Muted {
                 text: App.scan-types-text;
@@ -158,11 +158,11 @@ export component ScanPanel inherits GroupBox {
             vertical-stretch: 1;
             min-height: 90px;
             columns: [
-                { title: "Address", min-width: 140px },
-                { title: "Type", min-width: 70px },
-                { title: "Value", horizontal-stretch: 1, min-width: 90px },
-                { title: "Previous", horizontal-stretch: 1, min-width: 90px },
-                { title: "Where", horizontal-stretch: 1, min-width: 140px },
+                { title: @tr("Address"), min-width: 140px },
+                { title: @tr("Type"), min-width: 70px },
+                { title: @tr("Value"), horizontal-stretch: 1, min-width: 90px },
+                { title: @tr("Previous"), horizontal-stretch: 1, min-width: 90px },
+                { title: @tr("Where"), horizontal-stretch: 1, min-width: 140px },
             ];
             rows: App.results;
             row-pointer-event(row, event, pos) => {
@@ -180,7 +180,7 @@ export component ScanPanel inherits GroupBox {
                 horizontal-stretch: 1;
             }
             Button {
-                text: "Inspect";
+                text: @tr("Inspect");
                 enabled: results.current-row >= 0 && results.current-row < App.results.length;
                 clicked => {
                     App.inspect-address = App.results[results.current-row][0].text;
@@ -188,7 +188,7 @@ export component ScanPanel inherits GroupBox {
                 }
             }
             Button {
-                text: "Add to table";
+                text: @tr("Add to table");
                 enabled: results.current-row >= 0 && results.current-row < App.results.length;
                 clicked => {
                     App.add-result(results.current-row);

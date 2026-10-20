@@ -9,6 +9,7 @@ mod ctx;
 mod engine;
 mod events;
 mod format;
+mod i18n;
 mod inspect;
 mod launcher;
 mod poll;
@@ -39,12 +40,13 @@ fn monospace_family() -> String {
 fn main() -> Result<(), slint::PlatformError> {
     let w = MainWindow::new()?;
     let config = Config::load();
+    i18n::apply(&config.language);
     view::init(&w, config.result_rows);
     let agents: Vec<slint::SharedString> = launcher::available_agents().into_iter().map(Into::into).collect();
     w.global::<App>().set_agents(slint::ModelRc::new(slint::VecModel::from(agents)));
     settings::init(&w, &config);
     w.global::<Tone>().set_mono(monospace_family().into());
-    view::message(&w, Level::Info, "Starting the engine…");
+    view::message(&w, Level::Info, i18n::t("Starting the engine…"));
 
     let ctx = Ctx { ui: w.as_weak(), quick: Worker::spawn("quick"), ops: Worker::spawn("ops") };
     wire::wire(&w, &ctx);

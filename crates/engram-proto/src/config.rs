@@ -27,6 +27,8 @@ pub struct Config {
     pub result_rows: u64,
     /// Refresh interval of live values in the window.
     pub refresh_ms: u64,
+    /// Language of the window: auto (follow the system) | en | ru.
+    pub language: String,
 }
 
 impl Default for Config {
@@ -40,6 +42,7 @@ impl Default for Config {
             workspace: String::new(),
             result_rows: 1000,
             refresh_ms: 600,
+            language: "auto".into(),
         }
     }
 }
@@ -64,6 +67,7 @@ pub const KEYS: &[Key] = &[
     Key { name: "workspace", description: "Folder agents are started in (empty = default)", accepts: "a path; ~ is allowed" },
     Key { name: "result_rows", description: "Scan results shown in the window", accepts: "50..1000" },
     Key { name: "refresh_ms", description: "Refresh interval of live values in the window", accepts: "200..5000" },
+    Key { name: "language", description: "Language of the window", accepts: "auto | en | ru" },
 ];
 
 fn range(key: &str, v: &str, lo: u64, hi: u64) -> Result<u64, String> {
@@ -116,6 +120,7 @@ impl Config {
             "workspace" => self.workspace.clone(),
             "result_rows" => self.result_rows.to_string(),
             "refresh_ms" => self.refresh_ms.to_string(),
+            "language" => self.language.clone(),
             _ => return None,
         })
     }
@@ -135,6 +140,10 @@ impl Config {
             "workspace" => self.workspace = v.to_string(),
             "result_rows" => self.result_rows = range(key, v, 50, 1000)?,
             "refresh_ms" => self.refresh_ms = range(key, v, 200, 5000)?,
+            "language" => match v.to_ascii_lowercase().as_str() {
+                l @ ("auto" | "en" | "ru") => self.language = l.to_string(),
+                _ => return Err("language must be auto, en or ru".into()),
+            },
             _ => {
                 let names: Vec<&str> = KEYS.iter().map(|k| k.name).collect();
                 return Err(format!("unknown setting '{key}' (one of: {})", names.join(", ")));

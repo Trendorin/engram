@@ -129,8 +129,8 @@ pub fn open_agent_terminal(agent: &str) -> Result<String, String> {
         let _ = child.wait();
     });
     Ok(match cmd {
-        Some(_) => format!("Opened {agent} in {}", format::tilde(&ws)),
-        None => format!("Opened a terminal in {} — start any agent there", format::tilde(&ws)),
+        Some(_) => crate::i18n::tf("Opened {} in {}", &[&agent, &format::tilde(&ws)]),
+        None => crate::i18n::tf("Opened a terminal in {} — start any agent there", &[&format::tilde(&ws)]),
     })
 }
 
@@ -150,7 +150,7 @@ pub fn open_folder(path: &str) -> Result<String, String> {
     std::thread::spawn(move || {
         let _ = child.wait();
     });
-    Ok(format!("Opened {path}"))
+    Ok(crate::i18n::tf("Opened {}", &[&path]))
 }
 
 /// Run `engram setup` (asks for the password through pkexec). Blocking.
@@ -159,7 +159,7 @@ pub fn grant_access() -> Result<String, String> {
     let out = Command::new(bin).arg("setup").stdin(Stdio::null()).output().map_err(|e| format!("cannot run engram setup: {e}"))?;
     let text = String::from_utf8_lossy(&out.stdout).to_string() + &String::from_utf8_lossy(&out.stderr);
     if out.status.success() {
-        Ok("Access granted: engramd can now read your programs (the engine restarts)".into())
+        Ok(crate::i18n::t("Access granted: engramd can now read your programs (the engine restarts)"))
     } else {
         let last = text.lines().rev().find(|l| !l.trim().is_empty()).unwrap_or("engram setup failed").trim().to_string();
         Err(last)

@@ -23,7 +23,7 @@ component Cell inherits Text {
 }
 
 export component AddressTable inherits GroupBox {
-    title: App.table-game == "" ? "Address table" : "Address table — \{App.table-game}";
+    title: App.table-game == "" ? @tr("Address table") : @tr("Address table — {}", App.table-game);
 
     property <int> selected: -1; // row index
     property <int> selected-id: -1;
@@ -68,23 +68,23 @@ export component AddressTable inherits GroupBox {
             padding-right: 8px;
             spacing: 8px;
             HeaderCell {
-                text: "Freeze";
+                text: @tr("Freeze");
                 width: 48px;
             }
             HeaderCell {
-                text: "Description";
+                text: @tr("Description");
                 horizontal-stretch: 2;
             }
             HeaderCell {
-                text: "Address";
+                text: @tr("Address");
                 horizontal-stretch: 2;
             }
             HeaderCell {
-                text: "Type";
+                text: @tr("Type");
                 width: 64px;
             }
             HeaderCell {
-                text: "Value";
+                text: @tr("Value");
                 horizontal-stretch: 1.4;
             }
         }
@@ -157,7 +157,7 @@ export component AddressTable inherits GroupBox {
             }
 
             if App.entries.length == 0: Muted {
-                text: "No saved addresses yet.\nDouble-click a scan result, or let your agent call table_add.";
+                text: @tr("No saved addresses yet.\nDouble-click a scan result, or let your agent call table_add.");
                 horizontal-alignment: center;
                 wrap: word-wrap;
             }
@@ -166,14 +166,14 @@ export component AddressTable inherits GroupBox {
         HorizontalLayout {
             spacing: 6px;
             desc := LineEdit {
-                placeholder-text: "Description";
+                placeholder-text: @tr("Description");
                 horizontal-stretch: 2;
                 accepted => {
                     root.apply();
                 }
             }
             addr := LineEdit {
-                placeholder-text: "Address, Game.exe+0x10, [[…]+0x18]";
+                placeholder-text: @tr("Address, Game.exe+0x10, [[…]+0x18]");
                 horizontal-stretch: 2;
                 accepted => {
                     root.apply();
@@ -187,7 +187,7 @@ export component AddressTable inherits GroupBox {
                 }
             }
             value := LineEdit {
-                placeholder-text: root.editing ? "New value" : "Value";
+                placeholder-text: root.editing ? @tr("New value") : @tr("Value");
                 enabled: root.editing;
                 horizontal-stretch: 1.4;
                 accepted => {
@@ -200,28 +200,28 @@ export component AddressTable inherits GroupBox {
             spacing: 6px;
             alignment: end;
             if root.editing: Button {
-                text: "Inspect";
+                text: @tr("Inspect");
                 clicked => {
                     App.inspect-address = addr.text;
                     App.side-tab = 1;
                 }
             }
             if root.editing: Button {
-                text: "Remove";
+                text: @tr("Remove");
                 clicked => {
                     App.remove-entry(root.selected-id);
                     root.clear();
                 }
             }
             if root.editing: Button {
-                text: "New entry";
+                text: @tr("New entry");
                 clicked => {
                     root.clear();
                     desc.focus();
                 }
             }
             Button {
-                text: root.editing ? "Apply" : "Add";
+                text: root.editing ? @tr("Apply") : @tr("Add");
                 primary: true;
                 enabled: root.editing || (addr.text != "" && App.attached);
                 clicked => {

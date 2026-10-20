@@ -12,6 +12,7 @@ use serde_json::json;
 use slint::{ComponentHandle, Model};
 
 const POLICIES: [&str; 3] = ["ask", "allow", "deny"];
+const LANGUAGES: [&str; 3] = ["auto", "en", "ru"];
 
 /// Fill the tab (and the paths/version) from `c`.
 pub fn show(w: &MainWindow, c: &Config) {
@@ -25,6 +26,7 @@ pub fn show(w: &MainWindow, c: &Config) {
     app.set_set_rows(c.result_rows as i32);
     app.set_set_refresh(c.refresh_ms as i32);
     app.set_set_freeze(c.freeze_interval_ms as i32);
+    app.set_set_language_index(LANGUAGES.iter().position(|l| *l == c.language).unwrap_or(0) as i32);
 }
 
 /// One-time setup at startup.
@@ -60,6 +62,7 @@ pub fn save(w: &MainWindow, ctx: &Ctx) {
         ("result_rows", app.get_set_rows().to_string()),
         ("refresh_ms", app.get_set_refresh().to_string()),
         ("freeze_interval_ms", app.get_set_freeze().to_string()),
+        ("language", LANGUAGES.get(app.get_set_language_index().max(0) as usize).unwrap_or(&"auto").to_string()),
     ];
     for (key, value) in fields {
         if let Err(e) = c.set(key, &value) {
@@ -67,18 +70,19 @@ pub fn save(w: &MainWindow, ctx: &Ctx) {
         }
     }
     if let Err(e) = c.save() {
-        return note(w, &format!("Cannot write {}: {e}", tilde(&paths::config_file())), true);
+        return note(w, &crate::i18n::tf("Cannot write {}: {}", &[&tilde(&paths::config_file()), &e]), true);
     }
+    crate::i18n::apply(&c.language);
     // Live changes: the window's refresh and result count, the engine's timeouts.
     view::with(|st| st.result_rows = c.result_rows);
     poll::set_interval(c.refresh_ms);
     app.set_workspace(tilde(&paths::agent_workspace()).into());
     ctx.quick("reload_config", json!({}), |_, _| {});
-    note(w, "Saved. The start-up policy applies the next time the engine starts.", false);
+    note(w, &crate::i18n::t("Saved. The start-up policy applies the next time the engine starts."), false);
 }
 
 /// Put the defaults into the fields; nothing is written until Save.
 pub fn reset(w: &MainWindow) {
     show(w, &Config::default());
-    note(w, "Defaults restored in the form — press Save to keep them.", false);
+    note(w, &crate::i18n::t("Defaults restored in the form — press Save to keep them."), false);
 }

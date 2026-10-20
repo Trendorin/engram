@@ -30,7 +30,7 @@ impl Ctx {
                     app.set_paused(p);
                 } else {
                     if d["attached"] == json!(false) && s(&d["reason"]) == "exited" {
-                        view::message(w, Level::Warning, format!("{} (pid {}) exited", s(&d["name"]), d["pid"]));
+                        view::message(w, Level::Warning, crate::i18n::tf("{} (pid {}) exited", &[&s(&d["name"]), &d["pid"]]));
                     }
                     self.refresh_status();
                     self.refresh_table();
@@ -46,7 +46,7 @@ impl Ctx {
             }
             "approval_request" => {
                 view::push_approval(d);
-                view::message(w, Level::Warning, format!("{} is waiting for your approval", s(&d["client"])));
+                view::message(w, Level::Warning, crate::i18n::tf("{} is waiting for your approval", &[&s(&d["client"])]));
             }
             "approval_resolved" => {
                 view::remove_approval(d["id"].as_i64().unwrap_or(0) as i32);
@@ -56,7 +56,7 @@ impl Ctx {
                     "deny" => (Level::Info, "Request denied"),
                     _ => (Level::Warning, "An approval request timed out"),
                 };
-                view::message(w, level, text);
+                view::message(w, level, crate::i18n::t(text));
             }
             "policy" => app.set_policy_index(match s(&d["policy"]) {
                 "allow" => 1,
@@ -75,7 +75,7 @@ impl Ctx {
                 app.set_connected(true);
                 // Requests from before a reconnect can no longer be answered.
                 view::with(|st| st.approvals.set_vec(vec![]));
-                view::message(w, Level::Info, if again { "Reconnected to the engine" } else { "Engine ready" });
+                view::message(w, Level::Info, crate::i18n::t(if again { "Reconnected to the engine" } else { "Engine ready" }));
                 self.resync();
             }
             Err(e) => {

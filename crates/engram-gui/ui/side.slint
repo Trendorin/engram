@@ -16,7 +16,7 @@ component AgentTab inherits VerticalLayout {
     }
 
     Text {
-        text: "Open a coding agent next to this window. It works on the same session you see here, and every memory write waits for your approval.";
+        text: @tr("Open a coding agent next to this window. It works on the same session you see here, and every memory write waits for your approval.");
         wrap: word-wrap;
         color: Palette.foreground;
     }
@@ -29,7 +29,7 @@ component AgentTab inherits VerticalLayout {
             horizontal-stretch: 1;
         }
         Button {
-            text: "Open terminal";
+            text: @tr("Open terminal");
             primary: true;
             clicked => {
                 App.open-terminal(App.agents[App.agent-index]);
@@ -38,7 +38,7 @@ component AgentTab inherits VerticalLayout {
     }
 
     Muted {
-        text: "Workspace: \{App.workspace}";
+        text: @tr("Workspace: {}", App.workspace);
         font-size: 11px;
         overflow: elide;
     }
@@ -46,7 +46,7 @@ component AgentTab inherits VerticalLayout {
     HorizontalLayout {
         spacing: 8px;
         Muted {
-            text: "Agent memory writes:";
+            text: @tr("Agent memory writes:");
         }
         ComboBox {
             model: Choices.policies;
@@ -58,7 +58,7 @@ component AgentTab inherits VerticalLayout {
         }
     }
     if App.policy-index == 1: Text {
-        text: "Agents can write memory, freeze values and trace threads without asking.";
+        text: @tr("Agents can write memory, freeze values and trace threads without asking.");
         color: Tone.warning;
         wrap: word-wrap;
         font-size: 11px;
@@ -68,13 +68,13 @@ component AgentTab inherits VerticalLayout {
 
     HorizontalLayout {
         Heading {
-            text: "Activity";
+            text: @tr("Activity");
         }
         Rectangle {
             horizontal-stretch: 1;
         }
         Muted {
-            text: App.activity.length == 0 ? "" : "newest first";
+            text: App.activity.length == 0 ? "" : @tr("newest first");
             font-size: 11px;
         }
     }
@@ -104,7 +104,7 @@ component AgentTab inherits VerticalLayout {
                             font-size: 12px;
                         }
                         Text {
-                            text: item.notify ? "says" : item.tool;
+                            text: item.notify ? @tr("says") : item.tool;
                             color: item.ok ? Palette.foreground : Tone.error;
                             font-size: 12px;
                         }
@@ -124,7 +124,7 @@ component AgentTab inherits VerticalLayout {
             }
         }
         if App.activity.length == 0: Muted {
-            text: "Nothing yet. What agents do appears here live.";
+            text: @tr("Nothing yet. What agents do appears here live.");
             horizontal-alignment: center;
             wrap: word-wrap;
         }
@@ -146,7 +146,7 @@ component InspectTab inherits VerticalLayout {
         spacing: 8px;
         LineEdit {
             text <=> App.inspect-address;
-            placeholder-text: "Address: 0x7f12a0, Game.exe+0x1A2B30, [[Game.exe+0x10]+0x18]";
+            placeholder-text: @tr("Address: 0x7f12a0, Game.exe+0x1A2B30, [[Game.exe+0x10]+0x18]");
             accepted => {
                 root.run("analyze");
             }
@@ -161,28 +161,28 @@ component InspectTab inherits VerticalLayout {
     HorizontalLayout {
         spacing: 6px;
         Button {
-            text: "Analyze";
+            text: @tr("Analyze");
             enabled: root.ready;
             clicked => {
                 root.run("analyze");
             }
         }
         Button {
-            text: "Dissect";
+            text: @tr("Dissect");
             enabled: root.ready;
             clicked => {
                 root.run("dissect");
             }
         }
         Button {
-            text: "Disassemble";
+            text: @tr("Disassemble");
             enabled: root.ready;
             clicked => {
                 root.run("disassemble");
             }
         }
         Button {
-            text: "Hex";
+            text: @tr("Hex");
             enabled: root.ready;
             clicked => {
                 root.run("hexdump");
@@ -193,28 +193,28 @@ component InspectTab inherits VerticalLayout {
     HorizontalLayout {
         spacing: 6px;
         Button {
-            text: "Sample";
+            text: @tr("Sample");
             enabled: root.ready;
             clicked => {
                 root.run("sample");
             }
         }
         Button {
-            text: "Pointer scan";
+            text: @tr("Pointer scan");
             enabled: root.ready && !App.busy;
             clicked => {
                 root.run("pointer_scan");
             }
         }
         Button {
-            text: "Find writes";
+            text: @tr("Find writes");
             enabled: root.ready && !App.busy;
             clicked => {
                 root.run("watch_write");
             }
         }
         Button {
-            text: "Find accesses";
+            text: @tr("Find accesses");
             enabled: root.ready && !App.busy;
             clicked => {
                 root.run("watch_access");
@@ -225,12 +225,12 @@ component InspectTab inherits VerticalLayout {
     HorizontalLayout {
         spacing: 8px;
         Heading {
-            text: App.inspect-title == "" ? "Output" : App.inspect-title;
+            text: App.inspect-title == "" ? @tr("Output") : App.inspect-title;
             overflow: elide;
             horizontal-stretch: 1;
         }
         Button {
-            text: "Add to table";
+            text: @tr("Add to table");
             enabled: App.attached && App.inspect-address != "";
             clicked => {
                 App.add-entry(App.inspect-address, root.type, "");
@@ -244,22 +244,22 @@ component InspectTab inherits VerticalLayout {
         wrap: no-wrap;
         font-family: Tone.mono;
         font-size: 12px;
-        text: App.inspect-output == "" ? "Pick a scan result or table entry and choose an action.\n\nAnalyze      what the address is: region, module+offset, every type\nDissect      guess the structure around it (start a bit before)\nSample       watch the value change over a few seconds\nPointer scan find a module-based path that survives restarts\nFind writes  hardware watchpoint: trigger the change in-game while it runs" : App.inspect-output;
+        text: App.inspect-output == "" ? @tr("Pick a scan result or table entry and choose an action.\n\nAnalyze      what the address is: region, module+offset, every type\nDissect      guess the structure around it (start a bit before)\nSample       watch the value change over a few seconds\nPointer scan find a module-based path that survives restarts\nFind writes  hardware watchpoint: trigger the change in-game while it runs") : App.inspect-output;
     }
 }
 
 export component SidePanel inherits TabWidget {
     current-index <=> App.side-tab;
     Tab {
-        title: App.approvals.length > 0 ? "Agent (\{App.approvals.length})" : "Agent";
+        title: App.approvals.length > 0 ? @tr("Agent ({})", App.approvals.length) : @tr("Agent");
         AgentTab { }
     }
     Tab {
-        title: "Inspect";
+        title: @tr("Inspect");
         InspectTab { }
     }
     Tab {
-        title: "Settings";
+        title: @tr("Settings");
         SettingsTab { }
     }
 }
