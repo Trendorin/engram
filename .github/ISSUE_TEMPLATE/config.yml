@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://github.com/Trendorin/engram/blob/main/docs/wiki/en/README.md
+    about: Installation, usage, agents and troubleshooting
+  - name: Report a security vulnerability
+    url: https://github.com/Trendorin/engram/security/advisories/new
+    about: Please report security problems privately

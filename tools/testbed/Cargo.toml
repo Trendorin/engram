@@ -1,0 +1,7 @@
+[package]
+name = "engram-testbed"
+description = "A tiny fake game for testing Engram end to end"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false

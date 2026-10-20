@@ -1,0 +1,11 @@
+post_install() {
+  echo "Engram: run 'engram setup' once to let it read your own games (it grants CAP_SYS_PTRACE"
+  echo "to /usr/bin/engramd and asks for your password). Without it, start games through Engram."
+}
+
+post_upgrade() {
+  # A new engramd binary has no capability; setup has to run again.
+  if [ -x /usr/bin/getcap ] && ! /usr/bin/getcap /usr/bin/engramd | grep -q cap_sys_ptrace; then
+    echo "Engram: run 'engram setup' again to restore memory access for the updated engine."
+  fi
+}

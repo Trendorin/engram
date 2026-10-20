@@ -1,0 +1,164 @@
+// Shared state between the Rust side and the views. Rust writes the `in`
+// properties and implements the callbacks; views only read and invoke.
+
+import { Palette } from "std-widgets.slint";
+
+export struct EntryRow {
+    id: int,
+    description: string,
+    address: string,
+    resolved: string,
+    type: string,
+    value: string,
+    frozen: bool,
+}
+
+export struct ActivityRow {
+    time: string,
+    client: string,
+    tool: string,
+    summary: string,
+    ok: bool,
+    notify: bool,
+}
+
+export struct ApprovalRow {
+    id: int,
+    client: string,
+    tool: string,
+    summary: string,
+}
+
+/// Semantic colours that read well on both light and dark native palettes.
+export global Tone {
+    out property <bool> dark: Palette.color-scheme == ColorScheme.dark;
+    out property <color> error: dark ? #ff7b72 : #c62828;
+    out property <color> warning: dark ? #e3b341 : #9a6700;
+    out property <color> success: dark ? #56d364 : #1a7f37;
+    out property <color> agent: dark ? #79c0ff : #0550ae;
+    out property <color> warning-background: dark ? #3b2e0a : #fff4d6;
+    out property <color> muted: Palette.foreground.with-alpha(0.62);
+    /// Resolved monospace family (set from fontconfig at startup).
+    in property <string> mono: "monospace";
+}
+
+export global App {
+    // ---- engine / target ----------------------------------------------------
+    in property <bool> connected;
+    in property <bool> attached;
+    in property <string> target-name;
+    in property <int> target-pid;
+    in property <string> target-kind;
+    in property <bool> paused;
+    /// capability | unrestricted | children-only | disabled
+    in property <string> access;
+    /// 0 ask, 1 allow, 2 deny
+    in-out property <int> policy-index;
+
+    // ---- status bar -----------------------------------------------------------
+    in property <string> message;
+    /// 0 info, 1 success, 2 warning, 3 error
+    in property <int> message-level;
+
+    // ---- process picker -------------------------------------------------------
+    in property <[[StandardListViewItem]]> processes;
+    in property <string> processes-note;
+    in property <string> picker-error;
+    in property <bool> picker-loading;
+    in-out property <bool> picker-open;
+
+    // ---- scan -------------------------------------------------------------------
+    /// A long operation runs in the engine (ours or an agent's).
+    in property <bool> busy;
+    in property <string> busy-op;
+    in property <float> progress;
+    in property <bool> has-scan;
+    in property <int> scan-step;
+    in property <int> scan-total;
+    in property <string> scan-types-text;
+    in property <[string]> scan-type-filters: ["All types"];
+    in-out property <int> scan-type-filter;
+    in property <bool> can-undo;
+    in property <[[StandardListViewItem]]> results;
+    in property <string> results-note;
+
+    // ---- address table ----------------------------------------------------------
+    in property <string> table-game;
+    in property <[EntryRow]> entries;
+
+    // ---- agent ------------------------------------------------------------------------
+    in property <[ApprovalRow]> approvals;
+    in property <[ActivityRow]> activity;
+    in property <[string]> agents: ["Shell"];
+    in property <string> workspace;
+
+    /// 0 Agent, 1 Inspect, 2 Settings
+    in-out property <int> side-tab;
+
+    // ---- inspect --------------------------------------------------------------------
+    in-out property <string> inspect-address;
+    in-out property <int> inspect-type-index;
+    in property <bool> inspect-running;
+    in property <string> inspect-title;
+    in property <string> inspect-output;
+
+    // ---- settings (see engram_proto::config) ---------------------------------------------
+    /// Selected agent; shared by the Agent tab and Settings.
+    in-out property <int> agent-index;
+    in-out property <string> set-terminal;
+    in-out property <string> set-workspace;
+    in-out property <int> set-policy-index;
+    in-out property <int> set-timeout: 180;
+    in-out property <int> set-rows: 1000;
+    in-out property <int> set-refresh: 600;
+    in-out property <int> set-freeze: 100;
+    in property <string> terminal-detected;
+    in property <string> workspace-default;
+    in property <string> settings-note;
+    in property <bool> settings-error;
+    in property <string> version;
+    in property <string> config-path;
+    in property <string> data-path;
+    in property <string> logs-path;
+
+    // ---- callbacks (implemented in Rust) ----------------------------------------------
+    callback refresh-processes(include-helpers: bool);
+    callback filter-processes(text: string);
+    callback process-clicked(row: int);
+    callback attach-row(row: int);
+    callback launch(command: string);
+    callback detach();
+    callback toggle-pause();
+    callback grant-access();
+
+    callback first-scan(value: string, value2: string, type: string, compare: string, writable: bool, aligned: bool);
+    callback next-scan(compare: string, value: string, value2: string);
+    callback undo-scan();
+    callback reset-scan();
+    callback cancel();
+    callback filter-results(index: int);
+    callback result-clicked(row: int);
+    callback add-result(row: int);
+
+    callback add-entry(address: string, type: string, description: string);
+    callback update-entry(id: int, description: string, address: string, type: string, value: string);
+    callback freeze-entry(id: int, frozen: bool);
+    callback remove-entry(id: int);
+
+    callback set-policy(index: int);
+    callback respond(id: int, decision: string); // decision: allow | allow_session | deny
+    callback open-terminal(agent: string);
+    callback save-settings();
+    callback reset-settings();
+    callback open-folder(path: string);
+
+    callback inspect(action: string, address: string, type: string);
+}
+
+export global Choices {
+    out property <[string]> scan-types: ["auto", "i32", "i64", "f32", "f64", "i16", "i8", "u8", "u16", "u32", "u64", "bytes", "string", "string16"];
+    out property <[string]> first-compares: ["exact", "unknown", "greater", "less", "between", "not_equal"];
+    out property <[string]> next-compares: ["exact", "changed", "unchanged", "increased", "decreased", "increased_by", "decreased_by", "greater", "less", "between", "not_equal"];
+    out property <[string]> value-types: ["i32", "i64", "f32", "f64", "i16", "i8", "u8", "u16", "u32", "u64", "ptr", "bytes:8", "str:32", "str16:32"];
+    out property <[string]> policies: ["Ask me", "Allow all", "Deny all"];
+}

@@ -1,0 +1,217 @@
+name: Release
+
+# A pushed tag vX.Y.Z builds every package, installs and runs each one on its own
+# distribution, and publishes them with SHA256SUMS. Run it by hand to get the same
+# files as workflow artifacts without publishing anything.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  source:
+    name: Source archive
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Version
+        id: version
+        run: |
+          version=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if [ "$GITHUB_REF_TYPE" = tag ] && [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match the version $version in Cargo.toml"; exit 1
+          fi
+          grep -qx "pkgver=$version" packaging/arch/PKGBUILD
+          grep -Eq "^Version: +$version$" packaging/rpm/engram.spec
+          grep -q "^## \[$version\]" CHANGELOG.md
+          grep -q "release version=\"$version\"" packaging/io.github.trendorin.Engram.metainfo.xml
+
+      - name: Archive
+        run: |
+          mkdir dist
+          v=${{ steps.version.outputs.version }}
+          git archive --format=tar.gz --prefix="engram-$v/" -o "dist/engram-$v.tar.gz" HEAD
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: source
+          path: dist/*
+
+  arch:
+    name: Arch Linux package
+    needs: source
+    runs-on: ubuntu-24.04
+    container: archlinux:base-devel
+    steps:
+      - name: Build dependencies
+        run: pacman -Syu --noconfirm --needed rust qt6-base fontconfig libxkbcommon libcap hicolor-icon-theme
+
+      - uses: actions/checkout@v4
+
+      - name: Build as an unprivileged user
+        run: |
+          useradd -m builder
+          chown -R builder: .
+          cd packaging/arch
+          runuser -u builder -- makepkg --noconfirm --cleanbuild
+          mkdir -p ../../dist
+          mv ./*.pkg.tar.zst ../../dist/
+
+      - name: Install and run
+        run: |
+          pacman -U --noconfirm dist/*.pkg.tar.zst
+          pacman -Qkk engram
+          engram version
+          engramd --version
+          engram tools | head -3
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: arch
+          path: dist/*.pkg.tar.zst
+
+  debian:
+    name: Debian package
+    needs: source
+    runs-on: ubuntu-24.04
+    container: debian:trixie
+    steps:
+      - name: Build dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends build-essential dpkg-dev curl ca-certificates \
+            qt6-base-dev qt6-base-dev-tools libfontconfig-dev libxkbcommon-dev
+          curl -fsSL https://sh.rustup.rs | sh -s -- -y --profile minimal
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: packaging/deb/build.sh
+
+      - name: Install and run
+        run: |
+          apt-get install -y ./dist/engram_*.deb
+          dpkg -s engram | grep -E '^(Version|Depends):'
+          engram version
+          engramd --version
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: debian
+          path: dist/*.deb
+
+  fedora:
+    name: Fedora package
+    needs: source
+    runs-on: ubuntu-24.04
+    container: fedora:44
+    steps:
+      - name: Build dependencies
+        run: |
+          dnf install -y --setopt=install_weak_deps=False rpm-build cargo rust gcc-c++ \
+            qt6-qtbase-devel fontconfig-devel libxkbcommon-devel
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: source
+          path: dist
+
+      - name: Build
+        run: |
+          mkdir -p ~/rpmbuild/SOURCES
+          cp dist/engram-*.tar.gz ~/rpmbuild/SOURCES/
+          rpmbuild -bb packaging/rpm/engram.spec
+          rm dist/*
+          cp ~/rpmbuild/RPMS/x86_64/engram-[0-9]*.rpm dist/
+
+      - name: Install and run
+        run: |
+          dnf install -y ./dist/engram-*.rpm
+          rpm -V engram
+          engram version
+          engramd --version
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fedora
+          path: dist/*.rpm
+
+  appimage:
+    name: AppImage
+    needs: source
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build dependencies, Rust and Qt
+        run: packaging/appimage/build.sh --deps
+
+      - name: Build
+        run: packaging/appimage/build.sh
+
+      - name: Run
+        run: |
+          img=$(ls dist/*.AppImage)
+          "$img" --appimage-extract-and-run version
+          "$img" --appimage-extract-and-run tools | head -3
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: appimage
+          path: dist/*.AppImage
+
+  publish:
+    name: Publish
+    needs: [source, arch, debian, fedora, appimage]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Checksums
+        run: |
+          cd dist
+          sha256sum -- * > SHA256SUMS
+          cat SHA256SUMS
+
+      - name: Release notes
+        run: .github/release-notes.sh "${{ needs.source.outputs.version }}" > notes.md
+
+      - uses: actions/upload-artifact@v4
+        if: github.ref_type != 'tag'
+        with:
+          name: release
+          path: |
+            dist/*
+            notes.md
+
+      - name: Publish
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* --verify-tag \
+            --title "Engram ${{ needs.source.outputs.version }}" --notes-file notes.md

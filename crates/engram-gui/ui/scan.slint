@@ -1,0 +1,199 @@
+// Value scan controls and the result list.
+
+import { Button, LineEdit, ComboBox, CheckBox, StandardTableView, ProgressIndicator, GroupBox, Palette } from "std-widgets.slint";
+import { App, Choices, Tone } from "state.slint";
+import { Heading, Muted } from "common.slint";
+
+export component ScanPanel inherits GroupBox {
+    title: "Value scan";
+
+    property <[string]> compares: App.has-scan ? Choices.next-compares : Choices.first-compares;
+    property <string> compare: compares[compare-box.current-index];
+    property <string> scan-type: Choices.scan-types[type-box.current-index];
+    property <bool> needs-value: compare != "unknown" && compare != "changed" && compare != "unchanged" && compare != "increased" && compare != "decreased";
+    property <bool> has-scan: App.has-scan;
+
+    changed has-scan => {
+        compare-box.current-index = 0;
+    }
+
+    function submit() {
+        if (App.busy || !App.attached) {
+            return;
+        }
+        if (App.has-scan) {
+            App.next-scan(compare, value.text, value2.text);
+        } else {
+            App.first-scan(value.text, value2.text, scan-type, compare, writable.checked, aligned.checked);
+        }
+    }
+
+    VerticalLayout {
+        spacing: 8px;
+
+        HorizontalLayout {
+            spacing: 8px;
+            value := LineEdit {
+                enabled: root.needs-value;
+                placeholder-text: !root.needs-value ? "No value needed" : root.compare == "between" ? "From" : root.scan-type == "bytes" ? "Bytes, e.g. 48 8B ?? 05" : root.scan-type == "string" || root.scan-type == "string16" ? "Text" : "Value";
+                accepted => {
+                    root.submit();
+                }
+            }
+            if root.compare == "between": Muted {
+                text: "and";
+            }
+            value2 := LineEdit {
+                visible: root.compare == "between";
+                width: root.compare == "between" ? self.preferred-width : 0;
+                placeholder-text: "To";
+                accepted => {
+                    root.submit();
+                }
+            }
+            type-box := ComboBox {
+                model: Choices.scan-types;
+                enabled: !App.has-scan;
+                min-width: 110px;
+            }
+            compare-box := ComboBox {
+                model: root.compares;
+                min-width: 130px;
+            }
+        }
+
+        HorizontalLayout {
+            spacing: 8px;
+            Button {
+                text: App.has-scan ? "New scan" : "First scan";
+                primary: !App.has-scan;
+                enabled: App.attached && !App.busy;
+                clicked => {
+                    if (App.has-scan) {
+                        App.reset-scan();
+                        value.focus();
+                    } else {
+                        root.submit();
+                    }
+                }
+            }
+            Button {
+                text: "Next scan";
+                primary: App.has-scan;
+                enabled: App.has-scan && !App.busy;
+                clicked => {
+                    root.submit();
+                }
+            }
+            Button {
+                text: "Undo";
+                enabled: App.can-undo && !App.busy;
+                clicked => {
+                    App.undo-scan();
+                }
+            }
+            Rectangle {
+                width: 6px;
+            }
+            writable := CheckBox {
+                horizontal-stretch: 0;
+                text: "Writable only";
+                checked: true;
+                enabled: !App.has-scan;
+            }
+            aligned := CheckBox {
+                horizontal-stretch: 0;
+                text: "Aligned";
+                checked: true;
+                enabled: !App.has-scan;
+            }
+            Rectangle {
+                horizontal-stretch: 1;
+            }
+        }
+
+        if App.busy: HorizontalLayout {
+            spacing: 8px;
+            Muted {
+                text: App.busy-op == "pointer_scan" ? "Pointer scan…" : App.busy-op == "watch" ? "Watching…" : "Scanning…";
+            }
+            VerticalLayout {
+                alignment: center;
+                horizontal-stretch: 1;
+                ProgressIndicator {
+                    progress: App.progress;
+                }
+            }
+            Button {
+                text: "Cancel";
+                clicked => {
+                    App.cancel();
+                }
+            }
+        }
+
+        HorizontalLayout {
+            spacing: 10px;
+            Heading {
+                text: !App.has-scan ? "No scan yet" : App.scan-total == 1 ? "1 result" : "\{App.scan-total} results";
+            }
+            if App.has-scan: Muted {
+                text: "step \{App.scan-step}";
+            }
+            Muted {
+                text: App.scan-types-text;
+                overflow: elide;
+                horizontal-stretch: 1;
+            }
+            if App.scan-type-filters.length > 2: ComboBox {
+                model: App.scan-type-filters;
+                current-index <=> App.scan-type-filter;
+                selected => {
+                    App.filter-results(self.current-index);
+                }
+            }
+        }
+
+        results := StandardTableView {
+            vertical-stretch: 1;
+            min-height: 90px;
+            columns: [
+                { title: "Address", min-width: 140px },
+                { title: "Type", min-width: 70px },
+                { title: "Value", horizontal-stretch: 1, min-width: 90px },
+                { title: "Previous", horizontal-stretch: 1, min-width: 90px },
+                { title: "Where", horizontal-stretch: 1, min-width: 140px },
+            ];
+            rows: App.results;
+            row-pointer-event(row, event, pos) => {
+                if (event.kind == PointerEventKind.down && event.button == PointerEventButton.left) {
+                    App.result-clicked(row);
+                }
+            }
+        }
+
+        HorizontalLayout {
+            spacing: 8px;
+            Muted {
+                text: App.results-note;
+                overflow: elide;
+                horizontal-stretch: 1;
+            }
+            Button {
+                text: "Inspect";
+                enabled: results.current-row >= 0 && results.current-row < App.results.length;
+                clicked => {
+                    App.inspect-address = App.results[results.current-row][0].text;
+                    App.side-tab = 1;
+                }
+            }
+            Button {
+                text: "Add to table";
+                enabled: results.current-row >= 0 && results.current-row < App.results.length;
+                clicked => {
+                    App.add-result(results.current-row);
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,161 @@
+// Process selection overlay: filterable process list plus "start a program".
+
+import { Button, LineEdit, CheckBox, StandardTableView, Palette } from "std-widgets.slint";
+import { App, Tone } from "state.slint";
+import { Heading, Muted, Separator } from "common.slint";
+
+export component ProcessPicker inherits Rectangle {
+    callback close();
+    background: #00000070;
+
+    // Clicking the backdrop closes the overlay.
+    TouchArea {
+        clicked => {
+            root.close();
+        }
+    }
+
+    keys := FocusScope {
+        key-pressed(e) => {
+            if (e.text == Key.Escape) {
+                root.close();
+                return accept;
+            }
+            reject
+        }
+
+        panel := Rectangle {
+            x: (root.width - self.width) / 2;
+            y: (root.height - self.height) / 2;
+            width: min(root.width - 48px, 820px);
+            height: min(root.height - 48px, 600px);
+            background: Palette.background;
+            border-color: Palette.border;
+            border-width: 1px;
+            border-radius: 6px;
+            drop-shadow-blur: 24px;
+            drop-shadow-color: #00000060;
+
+            // Swallow clicks so they do not reach the backdrop.
+            TouchArea { }
+
+            VerticalLayout {
+                padding: 14px;
+                spacing: 10px;
+
+                HorizontalLayout {
+                    spacing: 8px;
+                    Heading {
+                        text: "Select a process";
+                        font-size: 16px;
+                    }
+                    Rectangle {
+                        horizontal-stretch: 1;
+                    }
+                    Muted {
+                        text: App.picker-loading ? "Loading…" : App.processes-note;
+                    }
+                    Button {
+                        text: "Refresh";
+                        clicked => {
+                            App.refresh-processes(helpers.checked);
+                        }
+                    }
+                }
+
+                HorizontalLayout {
+                    spacing: 10px;
+                    filter := LineEdit {
+                        placeholder-text: "Filter by name or command line";
+                        init => {
+                            self.focus();
+                        }
+                        edited(text) => {
+                            App.filter-processes(text);
+                            table.content-y = 0;
+                            table.current-row = App.processes.length > 0 ? 0 : -1;
+                        }
+                        accepted => {
+                            if (table.current-row >= 0) {
+                                App.attach-row(table.current-row);
+                            }
+                        }
+                    }
+
+                    helpers := CheckBox {
+                        text: "Show runtime helpers";
+                        toggled => {
+                            App.refresh-processes(self.checked);
+                        }
+                    }
+                }
+
+                table := StandardTableView {
+                    vertical-stretch: 1;
+                    columns: [
+                        { title: "Name", horizontal-stretch: 1, min-width: 180px },
+                        { title: "PID", min-width: 70px },
+                        { title: "Kind", min-width: 70px },
+                        { title: "Memory", min-width: 80px },
+                        { title: "Command line", horizontal-stretch: 2, min-width: 200px },
+                    ];
+                    rows: App.processes;
+                    row-pointer-event(row, event, pos) => {
+                        if (event.kind == PointerEventKind.down && event.button == PointerEventButton.left) {
+                            App.process-clicked(row);
+                        }
+                    }
+                }
+
+                if App.picker-error != "": Text {
+                    text: App.picker-error;
+                    color: Tone.error;
+                    wrap: word-wrap;
+                }
+
+                Separator { }
+
+                HorizontalLayout {
+                    spacing: 8px;
+                    Muted {
+                        text: "Or start a program:";
+                    }
+                    command := LineEdit {
+                        placeholder-text: "/path/to/game --args   (Engram can always read programs it started)";
+                        accepted => {
+                            if (self.text != "") {
+                                App.launch(self.text);
+                            }
+                        }
+                    }
+                    Button {
+                        text: "Start";
+                        enabled: command.text != "";
+                        clicked => {
+                            App.launch(command.text);
+                        }
+                    }
+                }
+
+                HorizontalLayout {
+                    spacing: 8px;
+                    alignment: end;
+                    Button {
+                        text: "Cancel";
+                        clicked => {
+                            root.close();
+                        }
+                    }
+                    Button {
+                        text: "Attach";
+                        primary: true;
+                        enabled: table.current-row >= 0 && table.current-row < App.processes.length;
+                        clicked => {
+                            App.attach-row(table.current-row);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

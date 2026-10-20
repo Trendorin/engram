@@ -1,0 +1,179 @@
+// Target selection, process control, access warning, and the approval bar.
+
+import { Button, Palette } from "std-widgets.slint";
+import { App, Tone, ApprovalRow } from "state.slint";
+import { Badge, Heading, Muted } from "common.slint";
+
+export component TopBar inherits Rectangle {
+    background: Palette.alternate-background;
+    min-height: layout.preferred-height;
+
+    layout := HorizontalLayout {
+        padding: 8px;
+        padding-left: 10px;
+        spacing: 8px;
+
+        Button {
+            text: App.attached ? "Change process…" : "Select process…";
+            primary: !App.attached && App.connected;
+            enabled: App.connected;
+            clicked => {
+                App.picker-open = true;
+                App.refresh-processes(false);
+            }
+        }
+
+        if App.attached: HorizontalLayout {
+            spacing: 8px;
+            padding-left: 6px;
+            Heading {
+                text: App.target-name;
+                font-size: 14px;
+            }
+            VerticalLayout {
+                alignment: center;
+                Badge {
+                    text: App.target-kind;
+                }
+            }
+            Muted {
+                text: "pid \{App.target-pid}" + (App.paused ? "  ·  paused" : "");
+            }
+        }
+
+        if !App.attached: Muted {
+            text: App.connected ? "No process attached" : "Connecting to the Engram engine…";
+        }
+
+        Rectangle {
+            horizontal-stretch: 1;
+        }
+
+        if App.access == "children-only" || App.access == "disabled": Rectangle {
+            border-radius: 4px;
+            background: Tone.warning-background;
+            border-color: Tone.warning;
+            border-width: 1px;
+            HorizontalLayout {
+                padding-left: 8px;
+                padding-right: 4px;
+                spacing: 8px;
+                Text {
+                    text: App.access == "disabled" ? "Kernel forbids ptrace (ptrace_scope=3)" : "Only programs started by Engram can be read";
+                    color: Palette.foreground;
+                    vertical-alignment: center;
+                }
+                if App.access == "children-only": VerticalLayout {
+                    alignment: center;
+                    padding: 3px;
+                    Button {
+                        text: "Grant access…";
+                        clicked => {
+                            App.grant-access();
+                        }
+                    }
+                }
+            }
+        }
+
+        if App.attached: Button {
+            text: App.paused ? "Resume" : "Pause";
+            clicked => {
+                App.toggle-pause();
+            }
+        }
+
+        if App.attached: Button {
+            text: "Detach";
+            clicked => {
+                App.detach();
+            }
+        }
+    }
+
+    Rectangle {
+        y: parent.height - 1px;
+        height: 1px;
+        background: Palette.border;
+    }
+}
+
+/// Shown while agents wait for the user's decision. Never hidden behind a tab.
+export component ApprovalBar inherits Rectangle {
+    in property <ApprovalRow> request;
+    in property <int> more;
+    background: Tone.warning-background;
+    min-height: layout.preferred-height;
+
+    layout := HorizontalLayout {
+        padding: 8px;
+        padding-left: 12px;
+        spacing: 10px;
+
+        VerticalLayout {
+            alignment: center;
+            spacing: 2px;
+            horizontal-stretch: 1;
+            HorizontalLayout {
+                spacing: 6px;
+                Text {
+                    text: "Approval needed:";
+                    font-weight: 600;
+                    color: Tone.warning;
+                }
+                Text {
+                    text: root.request.client;
+                    font-weight: 600;
+                    color: Tone.agent;
+                }
+                Text {
+                    text: "wants to run \{root.request.tool}";
+                    color: Palette.foreground;
+                }
+                if root.more > 0: Muted {
+                    text: "(+\{root.more} more waiting)";
+                }
+                Rectangle {
+                    horizontal-stretch: 1;
+                }
+            }
+            Text {
+                text: root.request.summary;
+                wrap: word-wrap;
+                color: Palette.foreground;
+            }
+        }
+
+        VerticalLayout {
+            alignment: center;
+            HorizontalLayout {
+                spacing: 6px;
+                Button {
+                    text: "Deny";
+                    clicked => {
+                        App.respond(root.request.id, "deny");
+                    }
+                }
+                Button {
+                    text: "Allow for session";
+                    clicked => {
+                        App.respond(root.request.id, "allow_session");
+                    }
+                }
+                Button {
+                    text: "Allow";
+                    primary: true;
+                    clicked => {
+                        App.respond(root.request.id, "allow");
+                    }
+                }
+            }
+        }
+    }
+
+    Rectangle {
+        y: parent.height - 1px;
+        height: 1px;
+        background: Tone.warning;
+    }
+}

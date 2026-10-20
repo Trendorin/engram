@@ -1,0 +1,194 @@
+// Settings tab: everything in ~/.config/engram/config.json, plus paths and version.
+
+import { Button, LineEdit, ComboBox, SpinBox, GroupBox, ScrollView, Palette } from "std-widgets.slint";
+import { App, Choices, Tone } from "state.slint";
+import { Heading, Muted } from "common.slint";
+
+component Field inherits HorizontalLayout {
+    in property <string> label;
+    spacing: 8px;
+    Text {
+        text: root.label;
+        min-width: 170px;
+        max-width: 170px;
+        vertical-alignment: center;
+        color: Palette.foreground;
+        wrap: word-wrap;
+    }
+    @children
+}
+
+component PathRow inherits HorizontalLayout {
+    in property <string> label;
+    in property <string> path;
+    spacing: 8px;
+    Muted {
+        text: root.label;
+        min-width: 70px;
+    }
+    Text {
+        text: root.path;
+        overflow: elide;
+        horizontal-stretch: 1;
+        vertical-alignment: center;
+        font-family: Tone.mono;
+        font-size: 11px;
+        color: Palette.foreground;
+    }
+    Button {
+        text: "Open";
+        clicked => {
+            App.open-folder(root.path);
+        }
+    }
+}
+
+export component SettingsTab inherits ScrollView {
+    content-height: inner.preferred-height;
+    content-width: self.visible-width;
+
+    inner := VerticalLayout {
+        width: root.visible-width;
+        padding: 10px;
+        spacing: 10px;
+
+        GroupBox {
+            title: "Agents";
+            VerticalLayout {
+                spacing: 6px;
+                Field {
+                    label: "Agent for \"Open terminal\"";
+                    ComboBox {
+                        model: App.agents;
+                        current-index <=> App.agent-index;
+                    }
+                }
+                Field {
+                    label: "Terminal";
+                    LineEdit {
+                        text <=> App.set-terminal;
+                        placeholder-text: App.terminal-detected == "" ? "none found — enter a command" : "auto: \{App.terminal-detected}";
+                    }
+                }
+                Field {
+                    label: "Workspace folder";
+                    LineEdit {
+                        text <=> App.set-workspace;
+                        placeholder-text: App.workspace-default;
+                    }
+                }
+            }
+        }
+
+        GroupBox {
+            title: "Safety";
+            VerticalLayout {
+                spacing: 6px;
+                Field {
+                    label: "Agent writes when Engram starts";
+                    ComboBox {
+                        model: Choices.policies;
+                        current-index <=> App.set-policy-index;
+                    }
+                }
+                Field {
+                    label: "Wait for my answer (s)";
+                    SpinBox {
+                        minimum: 10;
+                        maximum: 3600;
+                        step-size: 10;
+                        value <=> App.set-timeout;
+                    }
+                }
+            }
+        }
+
+        GroupBox {
+            title: "Window and engine";
+            VerticalLayout {
+                spacing: 6px;
+                Field {
+                    label: "Scan results shown";
+                    SpinBox {
+                        minimum: 50;
+                        maximum: 1000;
+                        step-size: 50;
+                        value <=> App.set-rows;
+                    }
+                }
+                Field {
+                    label: "Refresh live values (ms)";
+                    SpinBox {
+                        minimum: 200;
+                        maximum: 5000;
+                        step-size: 100;
+                        value <=> App.set-refresh;
+                    }
+                }
+                Field {
+                    label: "Rewrite frozen values (ms)";
+                    SpinBox {
+                        minimum: 20;
+                        maximum: 5000;
+                        step-size: 10;
+                        value <=> App.set-freeze;
+                    }
+                }
+            }
+        }
+
+        HorizontalLayout {
+            spacing: 8px;
+            Text {
+                text: App.settings-note;
+                color: App.settings-error ? Tone.error : Tone.muted;
+                wrap: word-wrap;
+                horizontal-stretch: 1;
+                vertical-alignment: center;
+            }
+            Button {
+                text: "Restore defaults";
+                clicked => {
+                    App.reset-settings();
+                }
+            }
+            Button {
+                text: "Save";
+                primary: true;
+                clicked => {
+                    App.save-settings();
+                }
+            }
+        }
+
+        GroupBox {
+            title: "About";
+            VerticalLayout {
+                spacing: 4px;
+                HorizontalLayout {
+                    spacing: 8px;
+                    Heading {
+                        text: "Engram \{App.version}";
+                    }
+                    Muted {
+                        text: "memory access: \{App.access == "" ? "?" : App.access}";
+                        horizontal-stretch: 1;
+                        horizontal-alignment: right;
+                    }
+                }
+                PathRow {
+                    label: "Settings";
+                    path: App.config-path;
+                }
+                PathRow {
+                    label: "Data";
+                    path: App.data-path;
+                }
+                PathRow {
+                    label: "Logs";
+                    path: App.logs-path;
+                }
+            }
+        }
+    }
+}

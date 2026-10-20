@@ -1,0 +1,3 @@
+# Long lines are fine here; keep simple expressions on one line.
+max_width = 140
+use_small_heuristics = "Max"

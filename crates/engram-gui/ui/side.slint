@@ -1,0 +1,265 @@
+// Right column: the Agent tab (launcher, policy, activity) and the Inspect tab.
+
+import { Button, LineEdit, ComboBox, ListView, TabWidget, TextEdit, Palette } from "std-widgets.slint";
+import { App, Choices, Tone } from "state.slint";
+import { Heading, Muted, Separator } from "common.slint";
+import { SettingsTab } from "settings.slint";
+
+component AgentTab inherits VerticalLayout {
+    padding: 10px;
+    spacing: 8px;
+
+    // Newest entries are inserted at the top; keep them in view.
+    property <int> count: App.activity.length;
+    changed count => {
+        feed.content-y = 0;
+    }
+
+    Text {
+        text: "Open a coding agent next to this window. It works on the same session you see here, and every memory write waits for your approval.";
+        wrap: word-wrap;
+        color: Palette.foreground;
+    }
+
+    HorizontalLayout {
+        spacing: 8px;
+        ComboBox {
+            model: App.agents;
+            current-index <=> App.agent-index;
+            horizontal-stretch: 1;
+        }
+        Button {
+            text: "Open terminal";
+            primary: true;
+            clicked => {
+                App.open-terminal(App.agents[App.agent-index]);
+            }
+        }
+    }
+
+    Muted {
+        text: "Workspace: \{App.workspace}";
+        font-size: 11px;
+        overflow: elide;
+    }
+
+    HorizontalLayout {
+        spacing: 8px;
+        Muted {
+            text: "Agent memory writes:";
+        }
+        ComboBox {
+            model: Choices.policies;
+            current-index <=> App.policy-index;
+            horizontal-stretch: 1;
+            selected => {
+                App.set-policy(self.current-index);
+            }
+        }
+    }
+    if App.policy-index == 1: Text {
+        text: "Agents can write memory, freeze values and trace threads without asking.";
+        color: Tone.warning;
+        wrap: word-wrap;
+        font-size: 11px;
+    }
+
+    Separator { }
+
+    HorizontalLayout {
+        Heading {
+            text: "Activity";
+        }
+        Rectangle {
+            horizontal-stretch: 1;
+        }
+        Muted {
+            text: App.activity.length == 0 ? "" : "newest first";
+            font-size: 11px;
+        }
+    }
+
+    Rectangle {
+        vertical-stretch: 1;
+        feed := ListView {
+            horizontal-scrollbar-policy: always-off;
+            for item[i] in App.activity: Rectangle {
+                background: Math.mod(i, 2) == 1 ? Palette.alternate-background : transparent;
+                height: row.preferred-height;
+                row := VerticalLayout {
+                    padding: 6px;
+                    padding-left: 8px;
+                    spacing: 2px;
+                    HorizontalLayout {
+                        spacing: 8px;
+                        Muted {
+                            text: item.time;
+                            font-size: 11px;
+                            font-family: Tone.mono;
+                        }
+                        Text {
+                            text: item.client;
+                            color: item.client == "gui" ? Tone.muted : Tone.agent;
+                            font-weight: 600;
+                            font-size: 12px;
+                        }
+                        Text {
+                            text: item.notify ? "says" : item.tool;
+                            color: item.ok ? Palette.foreground : Tone.error;
+                            font-size: 12px;
+                        }
+                        Rectangle {
+                            horizontal-stretch: 1;
+                        }
+                    }
+                    if item.summary != "": Text {
+                        text: item.summary;
+                        wrap: item.notify ? word-wrap : char-wrap;
+                        font-size: item.notify ? 13px : 11px;
+                        font-weight: item.notify ? 600 : 400;
+                        font-family: item.notify ? "" : Tone.mono;
+                        color: !item.ok ? Tone.error : item.notify ? Palette.foreground : Tone.muted;
+                    }
+                }
+            }
+        }
+        if App.activity.length == 0: Muted {
+            text: "Nothing yet. What agents do appears here live.";
+            horizontal-alignment: center;
+            wrap: word-wrap;
+        }
+    }
+}
+
+component InspectTab inherits VerticalLayout {
+    padding: 10px;
+    spacing: 8px;
+
+    property <string> type: Choices.value-types[App.inspect-type-index];
+    property <bool> ready: App.attached && App.inspect-address != "" && !App.inspect-running;
+
+    function run(action: string) {
+        App.inspect(action, App.inspect-address, type);
+    }
+
+    HorizontalLayout {
+        spacing: 8px;
+        LineEdit {
+            text <=> App.inspect-address;
+            placeholder-text: "Address: 0x7f12a0, Game.exe+0x1A2B30, [[Game.exe+0x10]+0x18]";
+            accepted => {
+                root.run("analyze");
+            }
+        }
+        ComboBox {
+            model: Choices.value-types;
+            current-index <=> App.inspect-type-index;
+            min-width: 90px;
+        }
+    }
+
+    HorizontalLayout {
+        spacing: 6px;
+        Button {
+            text: "Analyze";
+            enabled: root.ready;
+            clicked => {
+                root.run("analyze");
+            }
+        }
+        Button {
+            text: "Dissect";
+            enabled: root.ready;
+            clicked => {
+                root.run("dissect");
+            }
+        }
+        Button {
+            text: "Disassemble";
+            enabled: root.ready;
+            clicked => {
+                root.run("disassemble");
+            }
+        }
+        Button {
+            text: "Hex";
+            enabled: root.ready;
+            clicked => {
+                root.run("hexdump");
+            }
+        }
+    }
+
+    HorizontalLayout {
+        spacing: 6px;
+        Button {
+            text: "Sample";
+            enabled: root.ready;
+            clicked => {
+                root.run("sample");
+            }
+        }
+        Button {
+            text: "Pointer scan";
+            enabled: root.ready && !App.busy;
+            clicked => {
+                root.run("pointer_scan");
+            }
+        }
+        Button {
+            text: "Find writes";
+            enabled: root.ready && !App.busy;
+            clicked => {
+                root.run("watch_write");
+            }
+        }
+        Button {
+            text: "Find accesses";
+            enabled: root.ready && !App.busy;
+            clicked => {
+                root.run("watch_access");
+            }
+        }
+    }
+
+    HorizontalLayout {
+        spacing: 8px;
+        Heading {
+            text: App.inspect-title == "" ? "Output" : App.inspect-title;
+            overflow: elide;
+            horizontal-stretch: 1;
+        }
+        Button {
+            text: "Add to table";
+            enabled: App.attached && App.inspect-address != "";
+            clicked => {
+                App.add-entry(App.inspect-address, root.type, "");
+            }
+        }
+    }
+
+    TextEdit {
+        vertical-stretch: 1;
+        read-only: true;
+        wrap: no-wrap;
+        font-family: Tone.mono;
+        font-size: 12px;
+        text: App.inspect-output == "" ? "Pick a scan result or table entry and choose an action.\n\nAnalyze      what the address is: region, module+offset, every type\nDissect      guess the structure around it (start a bit before)\nSample       watch the value change over a few seconds\nPointer scan find a module-based path that survives restarts\nFind writes  hardware watchpoint: trigger the change in-game while it runs" : App.inspect-output;
+    }
+}
+
+export component SidePanel inherits TabWidget {
+    current-index <=> App.side-tab;
+    Tab {
+        title: App.approvals.length > 0 ? "Agent (\{App.approvals.length})" : "Agent";
+        AgentTab { }
+    }
+    Tab {
+        title: "Inspect";
+        InspectTab { }
+    }
+    Tab {
+        title: "Settings";
+        SettingsTab { }
+    }
+}

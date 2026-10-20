@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8B7CFF"/>
+      <stop offset="1" stop-color="#5B3FE0"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="112" height="112" rx="26" fill="url(#bg)"/>
+  <g fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="36" y="36" width="56" height="56" rx="11"/>
+    <path d="M52 24v12M64 24v12M76 24v12M52 92v12M64 92v12M76 92v12M24 52h12M24 64h12M24 76h12M92 52h12M92 64h12M92 76h12"/>
+  </g>
+  <g fill="#fff">
+    <rect x="47" y="47" width="9" height="9" rx="2.5" opacity=".42"/>
+    <rect x="59.5" y="47" width="9" height="9" rx="2.5" opacity=".42"/>
+    <rect x="72" y="47" width="9" height="9" rx="2.5" opacity=".42"/>
+    <rect x="47" y="59.5" width="9" height="9" rx="2.5" opacity=".42"/>
+    <rect x="59.5" y="59.5" width="9" height="9" rx="2.5" opacity=".42"/>
+    <rect x="72" y="59.5" width="9" height="9" rx="2.5"/>
+    <rect x="47" y="72" width="9" height="9" rx="2.5" opacity=".42"/>
+    <rect x="59.5" y="72" width="9" height="9" rx="2.5" opacity=".42"/>
+    <rect x="72" y="72" width="9" height="9" rx="2.5" opacity=".42"/>
+  </g>
+</svg>

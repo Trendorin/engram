@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.trendorin.Engram</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>Engram</name>
+  <summary>Memory scanner and debugger for Linux that AI agents can drive</summary>
+  <summary xml:lang="ru">Сканер памяти и отладчик для Linux, которым могут управлять ИИ-агенты</summary>
+  <description>
+    <p>
+      Engram finds values such as health, gold or ammo in a running program, changes or
+      freezes them, finds the code that writes them and saves pointer paths that survive
+      restarts. It works with native Linux programs and with Windows games under Wine
+      and Proton.
+    </p>
+    <p>
+      AI coding agents are full clients through an MCP server and a CLI: they work in the
+      same session you see, and every memory write waits for your approval. Engram only
+      attaches to ordinary processes of your own user.
+    </p>
+  </description>
+  <launchable type="desktop-id">io.github.trendorin.Engram.desktop</launchable>
+  <url type="homepage">https://github.com/Trendorin/engram</url>
+  <url type="bugtracker">https://github.com/Trendorin/engram/issues</url>
+  <developer id="io.github.trendorin">
+    <name>Trendorin</name>
+  </developer>
+  <categories>
+    <category>Development</category>
+    <category>Debugger</category>
+  </categories>
+  <provides>
+    <binary>engram</binary>
+    <binary>engramd</binary>
+    <binary>engram-gui</binary>
+  </provides>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="1.0.0" date="2026-10-20"/>
+  </releases>
+</component>
