@@ -136,6 +136,15 @@ fn write(d: &Daemon, client: &str, p: &P) -> R {
     let reason = p.str("reason").map(|r| format!("{r} — ")).unwrap_or_default();
     let where_ = if expr.trim() == hex(addr) { hex(addr) } else { format!("{expr} ({})", hex(addr)) };
     d.approve(client, "write", &format!("{reason}write {value} ({dt}) to {where_}; currently {old_txt}"))?;
+    // The prompt may have waited a long time: the guard must hold at the moment of the write.
+    if let Some(exp) = p.str("expected") {
+        let mut cur = vec![0u8; size.max(1)];
+        t.mem.read_exact(addr, &mut cur).map_err(core_err)?;
+        if !matches_expected(dt, &cur, &exp, t.ptr_size) {
+            return Err(RpcError::new("stale_value", format!("memory at {} now holds {}, not {exp}", hex(addr), dt.format(&cur)))
+                .hint("the value changed while waiting for approval: re-read it and ask again"));
+        }
+    }
     t.mem.write(addr, &bytes).map_err(core_err)?;
     let mut now = vec![0u8; size.max(1)];
     let new_txt = t.mem.read_exact(addr, &mut now).map(|_| dt.format(&now)).unwrap_or_default();

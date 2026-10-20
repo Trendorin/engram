@@ -20,13 +20,20 @@ fn prefix() -> Option<PathBuf> {
 
 fn read_manifest(prefix: &Path) -> Option<Vec<PathBuf>> {
     let text = std::fs::read_to_string(prefix.join(MANIFEST)).ok()?;
-    // Only files inside the prefix: a damaged manifest must not reach elsewhere.
+    // Only files inside the prefix: a damaged manifest must not reach elsewhere. The directory of
+    // each entry is resolved first, so `..` and symlinked parents cannot lead out, and an install
+    // made through a symlinked prefix still matches.
     Some(
         text.lines()
             .map(str::trim)
             .filter(|l| !l.is_empty())
             .map(PathBuf::from)
-            .filter(|p| p.is_absolute() && p.starts_with(prefix))
+            .filter(|p| p.is_absolute())
+            .filter_map(|p| {
+                let name = p.file_name()?.to_owned();
+                let dir = p.parent()?.canonicalize().ok()?;
+                dir.starts_with(prefix).then(|| dir.join(name))
+            })
             .collect(),
     )
 }

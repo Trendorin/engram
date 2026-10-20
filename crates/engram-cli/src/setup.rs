@@ -126,7 +126,20 @@ pub fn setup() -> ExitCode {
             return ExitCode::from(1);
         };
         let elevate = if on_path("pkexec").is_some() { "pkexec" } else { "sudo" };
-        let status = Command::new(elevate).arg(setcap).arg("cap_sys_ptrace=ep").arg(&daemon).status();
+        // The binary may sit in a directory the user owns, so another process could swap it while the
+        // password prompt is open. The elevated step therefore opens the file once, checks that it
+        // is the very content hashed here, and applies the capability to that open file.
+        let Some(sum) = sha256_of(&daemon) else {
+            bad("engramd", "could not read it to compute its checksum");
+            return ExitCode::from(1);
+        };
+        const GRANT: &str = r#"f="$1"; want="$2"; setcap="$3"
+exec 3< "$f" || exit 1
+got=$(sha256sum <&3 | cut -d' ' -f1)
+if [ "$got" != "$want" ]; then echo "engramd changed while waiting for the password; nothing was granted" >&2; exit 1; fi
+exec "$setcap" cap_sys_ptrace=ep /proc/self/fd/3"#;
+        let status =
+            Command::new(elevate).arg("/bin/sh").arg("-c").arg(GRANT).arg("engram-setup").arg(&daemon).arg(&sum).arg(setcap).status();
         match status {
             Ok(s) if s.success() && has_file_cap(&daemon) => ok("memory access", "granted"),
             _ => {
@@ -164,4 +177,13 @@ pub fn agent_init(dir: Option<&str>) -> ExitCode {
             ExitCode::from(1)
         }
     }
+}
+
+/// SHA-256 of a file through coreutils, as lowercase hex.
+fn sha256_of(path: &Path) -> Option<String> {
+    let out = Command::new("sha256sum").arg(path).output().ok()?;
+    if !out.status.success() {
+        return None;
+    }
+    String::from_utf8(out.stdout).ok()?.split_whitespace().next().map(str::to_string)
 }

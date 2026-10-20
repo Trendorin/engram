@@ -5,6 +5,41 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.0.1] — 2026-10-20
+
+Security and correctness fixes after an independent review.
+
+### Security
+- `engram setup` no longer trusts the path of the engine: the elevated step opens the file once,
+  checks that it is the content that was hashed before the password prompt, and applies
+  `CAP_SYS_PTRACE` to that open file, so swapping the binary while the prompt is open grants nothing.
+- The GUI's and the launcher's exemption from approvals is decided by the kernel's view of the
+  connecting process, not by a name in the request: `ENGRAM_CLIENT=gui engram write …` is an
+  ordinary client and is asked like any other.
+- Clients verify with `SO_PEERCRED` that the engine socket belongs to their own user before sending
+  anything (the launcher sends its environment), so a socket another user put in `/tmp` is refused.
+- Editing the address or type of a frozen entry ends the freeze instead of writing the old bytes
+  to the new address without approval; freezes do not carry over to another process of the same game.
+- `write` checks `expected` again after the approval, so a value that changed while the prompt was
+  open is not overwritten.
+- The installer no longer interpolates the prefix into `sed` programs (a prefix could run commands),
+  quotes the path in the desktop entry, and the uninstaller refuses manifest entries that leave the
+  prefix through `..` or symlinks.
+- Release builds pin every GitHub Action to a commit and check the AppImage tools against a SHA-256.
+
+### Fixed
+- Address expressions nested very deeply are an error instead of a stack overflow that stopped the engine.
+- Hex input and module names with non-ASCII characters no longer panic; a pointer value that does not fit
+  the target's pointer size is rejected instead of being truncated.
+- Exact byte and string scans find overlapping matches (`aa` in `aaa`).
+- A scan that finishes after another process was attached is discarded instead of replacing its session.
+- Editing the value of a frozen entry keeps the new value instead of being undone by the freezer.
+- `engram scan value=1.000` keeps the three decimals (they set the tolerance); `--compact` and
+  `--pretty` after `--` belong to the launched program.
+- `engram agent-init` stops with an error when `.mcp.json` or `opencode.json` is not valid JSON instead of
+  overwriting it, and `engram uninstall` works through a symlinked prefix.
+
+
 ## [1.0.0] — 2026-10-20
 
 First release.
@@ -55,5 +90,6 @@ First release.
 - Settings in `~/.config/engram/config.json`, editable with `engram config` and in the window.
 - `engram uninstall` removes exactly the installed files (manifest), optionally user data.
 
-[Unreleased]: https://github.com/Trendorin/engram/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/Trendorin/engram/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/Trendorin/engram/releases/tag/v1.0.1
 [1.0.0]: https://github.com/Trendorin/engram/releases/tag/v1.0.0

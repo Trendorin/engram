@@ -133,7 +133,9 @@ pub fn find_module<'a>(mods: &'a [Module], name: &str) -> Option<&'a Module> {
     mods.iter().find(|m| m.name.eq_ignore_ascii_case(name)).or_else(|| {
         // Allow "UnityPlayer" for "UnityPlayer.dll" when unambiguous.
         let mut hits = mods.iter().filter(|m| {
-            m.name.len() > name.len() && m.name[..name.len()].eq_ignore_ascii_case(name) && m.name.as_bytes()[name.len()] == b'.'
+            m.name.len() > name.len()
+                && m.name.get(..name.len()).is_some_and(|prefix| prefix.eq_ignore_ascii_case(name))
+                && m.name.as_bytes()[name.len()] == b'.'
         });
         let first = hits.next()?;
         hits.next().is_none().then_some(first)

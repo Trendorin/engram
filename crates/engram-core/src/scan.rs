@@ -574,7 +574,12 @@ fn pattern_matches(buf: &[u8], bytes: &[u8], mask: &[u8]) -> Vec<u32> {
         return out;
     }
     if mask.iter().all(|m| *m == 0xFF) {
-        out.extend(memchr::memmem::find_iter(buf, bytes).map(|o| o as u32));
+        // Matches may overlap ("aa" in "aaa" is at 0 and 1), which find_iter would skip.
+        let mut start = 0;
+        while let Some(o) = memchr::memmem::find(&buf[start..], bytes) {
+            out.push((start + o) as u32);
+            start += o + 1;
+        }
         return out;
     }
     let anchor = mask.iter().position(|m| *m == 0xFF).unwrap();

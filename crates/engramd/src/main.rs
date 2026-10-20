@@ -83,8 +83,9 @@ fn main() {
         if !peer_is_us(&stream) {
             continue; // the socket is 0600 in a 0700 dir; this is defence in depth
         }
+        let peer = peer_role(&stream);
         let d = d.clone();
-        std::thread::spawn(move || serve(d, stream));
+        std::thread::spawn(move || serve(d, stream, peer));
     }
 }
 
@@ -101,7 +102,29 @@ fn peer_is_us(s: &UnixStream) -> bool {
     r == 0 && cred.uid == unsafe { libc::getuid() }
 }
 
-fn serve(d: Arc<Daemon>, stream: UnixStream) {
+/// What the kernel says about the other end of a connection: the executable of its process.
+/// Names in a request are only labels; the GUI's exemption from approvals and the launcher's
+/// are granted by this, so `ENGRAM_CLIENT=gui engram write …` is just an ordinary agent.
+#[derive(Clone, Copy, Default)]
+struct PeerRole {
+    gui: bool,
+    cli: bool,
+}
+
+fn peer_role(s: &UnixStream) -> PeerRole {
+    let mut cred: libc::ucred = unsafe { std::mem::zeroed() };
+    let mut len = std::mem::size_of::<libc::ucred>() as libc::socklen_t;
+    // SAFETY: SO_PEERCRED fills a ucred of `len` bytes.
+    let r = unsafe { libc::getsockopt(s.as_raw_fd(), libc::SOL_SOCKET, libc::SO_PEERCRED, &mut cred as *mut _ as *mut _, &mut len) };
+    if r != 0 {
+        return PeerRole::default();
+    }
+    let exe = std::fs::read_link(format!("/proc/{}/exe", cred.pid)).ok();
+    let name = exe.as_ref().and_then(|p| p.file_name()).map(|n| n.to_string_lossy().trim_end_matches(" (deleted)").to_string());
+    PeerRole { gui: name.as_deref() == Some("engram-gui"), cli: name.as_deref() == Some("engram") }
+}
+
+fn serve(d: Arc<Daemon>, stream: UnixStream, peer: PeerRole) {
     let Ok(read_half) = stream.try_clone() else { return };
     let reader = BufReader::new(read_half);
     let mut writer = stream;
@@ -120,7 +143,12 @@ fn serve(d: Arc<Daemon>, stream: UnixStream) {
                 continue;
             }
         };
-        let client = req.client.clone().unwrap_or_else(|| "unknown".into());
+        let claimed = req.client.clone().unwrap_or_else(|| "unknown".into());
+        let client = match claimed.as_str() {
+            "gui" if !peer.gui => "gui (unverified)".to_string(),
+            "launcher" if !peer.cli => "launcher (unverified)".to_string(),
+            _ => claimed,
+        };
 
         if req.method == "subscribe" {
             let approver = client == "gui" && req.params.get("approver").and_then(|v| v.as_bool()).unwrap_or(false);

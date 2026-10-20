@@ -20,16 +20,23 @@ use std::process::ExitCode;
 fn main() -> ExitCode {
     let mut args: Vec<String> = std::env::args().skip(1).collect();
     let mut pretty = std::io::stdout().is_terminal();
-    args.retain(|a| match a.as_str() {
-        "--pretty" => {
-            pretty = true;
-            false
+    // Our own flags end at `--`: after it come the child's arguments (`engram launch -- game --compact`).
+    let own = args.iter().position(|a| a == "--").unwrap_or(args.len());
+    let mut i = 0;
+    args.retain(|a| {
+        let ours = i < own;
+        i += 1;
+        match (ours, a.as_str()) {
+            (true, "--pretty") => {
+                pretty = true;
+                false
+            }
+            (true, "--compact") => {
+                pretty = false;
+                false
+            }
+            _ => true,
         }
-        "--compact" => {
-            pretty = false;
-            false
-        }
-        _ => true,
     });
     let Some(cmd) = args.first().cloned() else {
         print!("{}", help::USAGE);
@@ -76,6 +83,12 @@ fn fail(e: &RpcError, pretty: bool) -> ExitCode {
     ExitCode::from(1)
 }
 
+/// True when JSON would print the number exactly as typed (`37`, not `1.000` or `1e3`).
+fn is_canonical(n: &Value, typed: &str) -> bool {
+    let printed = n.to_string();
+    printed == typed
+}
+
 /// `key=value` pairs → JSON object. Numbers and booleans are typed; everything
 /// else stays a string (so `address=[[Game.exe+10]+18]` is not parsed as JSON).
 pub fn parse_args(rest: &[String]) -> Result<Value, String> {
@@ -86,7 +99,10 @@ pub fn parse_args(rest: &[String]) -> Result<Value, String> {
     for a in rest {
         let (k, v) = a.split_once('=').ok_or_else(|| format!("expected key=value, got '{a}'"))?;
         let parsed = match serde_json::from_str::<Value>(v) {
-            Ok(x @ (Value::Number(_) | Value::Bool(_))) => x,
+            // A number keeps its text unless JSON would rewrite it: `1.000` is a scan literal with
+            // three decimals (it sets the tolerance), not the float 1.0.
+            Ok(x @ Value::Number(_)) if is_canonical(&x, v) => x,
+            Ok(x @ Value::Bool(_)) => x,
             Ok(x @ (Value::Array(_) | Value::Object(_))) if k == "argv" || k == "env" => x,
             _ => Value::String(v.to_string()),
         };

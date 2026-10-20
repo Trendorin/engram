@@ -68,6 +68,31 @@ info() { printf '    %s%s%s\n' "$D" "$*" "$R"; }
 die() { printf '\n  %s✗ %s%s\n\n' "$RED" "$*" "$R" >&2; exit 1; }
 tilde() { case "$1" in "$HOME"/*) printf '~/%s' "${1#"$HOME"/}" ;; "$HOME") printf '~' ;; *) printf '%s' "$1" ;; esac; }
 
+# desktop_entry SRC DEST BINARY — copies a .desktop file and points Exec and TryExec at BINARY,
+# quoted the way the Desktop Entry spec wants, so paths with spaces or odd characters work and
+# nothing in the path is ever interpreted as a program.
+desktop_entry() {
+    local src="$1" dst="$2" bin="$3" q line name="${3##*/}"
+    q="${bin//\\/\\\\}"; q="${q//\"/\\\"}"; q="${q//\$/\\\$}"; q="${q//\`/\\\`}"; q="${q//%/%%}"
+    while IFS= read -r line || [ -n "$line" ]; do
+        case "$line" in
+            "Exec=$name" | "Exec=$name "*) printf 'Exec="%s"%s\n' "$q" "${line#"Exec=$name"}" ;;
+            "TryExec=$name") printf 'TryExec=%s\n' "$bin" ;;
+            *) printf '%s\n' "$line" ;;
+        esac
+    done <"$src" >"$dst"
+}
+
+# inside_prefix PATH — true if PATH (a line of the uninstall manifest) really is below $PREFIX:
+# no "..", and its directory resolves, symlinks included, to somewhere inside the prefix.
+inside_prefix() {
+    local f="$1" d root
+    case "$f" in */../* | */..) return 1 ;; esac
+    d="$(cd "$(dirname "$f")" 2>/dev/null && pwd -P)" || return 1
+    root="$(cd "$PREFIX" 2>/dev/null && pwd -P)" || return 1
+    case "$d/" in "$root"/*) return 0 ;; *) return 1 ;; esac
+}
+
 # Closed input is never taken as an answer: stop before doing anything else.
 read_answer() {
     if ! read -r REPLY; then
@@ -325,7 +350,7 @@ install_files() {
         install -m755 "$src_bin/engram-gui" "$BIN_DIR/engram-gui"
         install -Dm644 "$ICON_SRC" "$ICON_DIR/$APP_ID.svg"
         mkdir -p "$APP_DIR"
-        sed "s|^Exec=engram-gui|Exec=$BIN_DIR/engram-gui|" "$DESKTOP_SRC" > "$APP_DIR/$APP_ID.desktop"
+        desktop_entry "$DESKTOP_SRC" "$APP_DIR/$APP_ID.desktop" "$BIN_DIR/engram-gui"
         files+=("$BIN_DIR/engram-gui" "$ICON_DIR/$APP_ID.svg" "$APP_DIR/$APP_ID.desktop")
     else
         rm -f "$BIN_DIR/engram-gui" "$ICON_DIR/$APP_ID.svg" "$APP_DIR/$APP_ID.desktop"

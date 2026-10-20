@@ -67,6 +67,7 @@ fn table_set(d: &Daemon, client: &str, p: &P) -> R {
     if let Some(desc) = p.str("description") {
         entry.description = desc;
     }
+    let (old_address, old_dtype) = (entry.address.clone(), entry.dtype);
     if let Some(a) = p.str("address") {
         if let Some(t) = &t {
             t.resolve(&a)?;
@@ -75,6 +76,11 @@ fn table_set(d: &Daemon, client: &str, p: &P) -> R {
     }
     if p.str("type").is_some() {
         entry.dtype = dtype(p, "type", "i32")?;
+    }
+    // A freeze holds bytes for one address and type. Moving it would write the old bytes somewhere
+    // new without the approval a write needs, so the freeze ends; freezing again asks.
+    if entry.frozen.is_some() && (entry.address != old_address || entry.dtype != old_dtype) {
+        entry.frozen = None;
     }
     let value = p.str("value");
     let freeze = p.bool("freeze");
@@ -98,7 +104,9 @@ fn table_set(d: &Daemon, client: &str, p: &P) -> R {
             t.mem.write(addr, &bytes).map_err(core_err)?;
             written = read_value(&t, addr, entry.dtype);
         }
-        if freeze == Some(true) {
+        // Editing the value of a frozen entry changes what is held; otherwise the freezer would
+        // write the old bytes back a moment later.
+        if freeze == Some(true) || (value.is_some() && entry.frozen.is_some() && freeze != Some(false)) {
             entry.frozen = Some(bytes);
         }
     }

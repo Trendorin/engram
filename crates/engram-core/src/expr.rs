@@ -15,7 +15,7 @@ pub trait Resolver {
 
 pub fn eval(expr: &str, r: &dyn Resolver) -> Result<u64> {
     let toks = lex(expr)?;
-    let mut p = Parser { toks, pos: 0, r };
+    let mut p = Parser { toks, pos: 0, depth: 0, r };
     let v = p.sum()?;
     if p.pos != p.toks.len() {
         return Err(Error::invalid(format!("unexpected trailing input in '{expr}'")));
@@ -103,9 +103,14 @@ fn lex(s: &str) -> Result<Vec<Tok>> {
     Ok(out)
 }
 
+/// Parentheses and dereferences nest this deep at most: the parser recurses, and a deeply
+/// nested expression must be an error, not a stack overflow that takes the engine down.
+const MAX_DEPTH: usize = 64;
+
 struct Parser<'a> {
     toks: Vec<Tok>,
     pos: usize,
+    depth: usize,
     r: &'a dyn Resolver,
 }
 
@@ -135,17 +140,29 @@ impl Parser<'_> {
             Tok::Num(v) => Ok(v),
             Tok::Name(n) => self.r.module_base(&n).ok_or_else(|| Error::new("unknown_module", format!("no module named '{n}' in target"))),
             Tok::LParen => {
+                self.enter()?;
                 let v = self.sum()?;
+                self.depth -= 1;
                 self.expect(Tok::RParen)?;
                 Ok(v)
             }
             Tok::LBrack => {
+                self.enter()?;
                 let a = self.sum()?;
+                self.depth -= 1;
                 self.expect(Tok::RBrack)?;
                 self.r.read_ptr(a).ok_or_else(|| Error::new("bad_pointer", format!("cannot dereference {}", crate::hex(a))))
             }
             other => Err(Error::invalid(format!("unexpected {other:?}"))),
         }
+    }
+
+    fn enter(&mut self) -> Result<()> {
+        self.depth += 1;
+        if self.depth > MAX_DEPTH {
+            return Err(Error::invalid("address expression is nested too deeply"));
+        }
+        Ok(())
     }
 
     fn expect(&mut self, t: Tok) -> Result<()> {
@@ -184,5 +201,7 @@ mod tests {
         assert_eq!(eval("\"game.exe\" - 0x10", &Fake).unwrap(), 0xff0);
         assert!(eval("[0x1]", &Fake).is_err());
         assert!(eval("nosuch.dll+4", &Fake).is_err());
+        let deep = format!("{}0{}", "(".repeat(100_000), ")".repeat(100_000));
+        assert!(eval(&deep, &Fake).is_err());
     }
 }

@@ -154,8 +154,13 @@ fn attach(d: &Daemon, p: &P) -> R {
     let t = Arc::new(t);
     let (_, mods) = t.layout();
     let main = maps::find_module(&mods, &t.name).map(|m| json!({ "name": m.name, "base": hex(m.base), "size": hex(m.end - m.base) }));
+    let previous_pid = d.target.read().unwrap().as_ref().map(|old| old.pid);
     *d.target.write().unwrap() = Some(t.clone());
     *d.scan.lock().unwrap() = Default::default();
+    if previous_pid != Some(t.pid) {
+        // Freezes were approved for one process; another instance of the same game must not inherit them.
+        d.table.lock().unwrap().unfreeze_all();
+    }
     let game_key = match &t.steam_app_id {
         Some(app) => format!("{}-{app}", t.name),
         None => t.name.clone(),

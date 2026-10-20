@@ -215,6 +215,9 @@ impl DataType {
             Self::Num(n) => n.encode(text),
             Self::Ptr => {
                 let v = crate::parse_addr(text).ok_or_else(|| Error::invalid(format!("'{text}' is not an address")))?;
+                if ptr_size < 8 && v >> (ptr_size * 8) != 0 {
+                    return Err(Error::invalid(format!("{text} does not fit in a {}-bit pointer", ptr_size * 8)));
+                }
                 Ok(v.to_le_bytes()[..ptr_size].to_vec())
             }
             Self::Bytes(_) => parse_hex_bytes(text),
@@ -276,6 +279,9 @@ pub fn hex_bytes(b: &[u8]) -> String {
 
 pub fn parse_hex_bytes(text: &str) -> Result<Vec<u8>> {
     let clean: String = text.chars().filter(|c| !c.is_whitespace()).collect();
+    if !clean.is_ascii() {
+        return Err(Error::invalid(format!("bad hex in '{text}'")));
+    }
     if !clean.len().is_multiple_of(2) {
         return Err(Error::invalid("hex byte string must have an even number of digits"));
     }

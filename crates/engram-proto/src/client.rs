@@ -18,6 +18,11 @@ pub struct Client {
 impl Client {
     pub fn connect(name: &str) -> io::Result<Self> {
         let s = UnixStream::connect(paths::socket())?;
+        // Anything requests carry (arguments, the launcher's environment) goes to this socket:
+        // be sure that it is our own engine, not a socket another user put at a guessable path.
+        if !peer_is_us(&s) {
+            return Err(io::Error::new(io::ErrorKind::PermissionDenied, "the engine socket belongs to another user"));
+        }
         Ok(Self { reader: BufReader::new(s.try_clone()?), writer: s, next_id: 1, name: name.to_string() })
     }
 
@@ -121,4 +126,13 @@ pub fn spawn_daemon() -> Result<(), RpcError> {
     }
     cmd.spawn().map_err(|e| RpcError::new("daemon_unavailable", format!("cannot start engramd: {e}")))?;
     Ok(())
+}
+
+fn peer_is_us(s: &UnixStream) -> bool {
+    use std::os::fd::AsRawFd;
+    let mut cred: libc::ucred = unsafe { std::mem::zeroed() };
+    let mut len = std::mem::size_of::<libc::ucred>() as libc::socklen_t;
+    // SAFETY: SO_PEERCRED fills a ucred of `len` bytes.
+    let r = unsafe { libc::getsockopt(s.as_raw_fd(), libc::SOL_SOCKET, libc::SO_PEERCRED, &mut cred as *mut _ as *mut _, &mut len) };
+    r == 0 && cred.uid == unsafe { libc::getuid() }
 }

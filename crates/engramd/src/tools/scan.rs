@@ -215,11 +215,21 @@ fn scan_first(d: &Daemon, p: &P) -> R {
     let limit = p.int_or("limit", 15, 0, 200) as usize;
     *d.scan.lock().unwrap() = Default::default(); // free the old session before allocating a new one
     let s = d.long_op("scan", || ScanSession::first(&t.mem, &regions, kinds, aligned, &q, &scope, &d.progress).map_err(core_err))?;
+    ensure_same_target(d, &t)?;
     let summary = scan_summary(&t, &s, limit);
     let total = s.total();
     d.scan.lock().unwrap().current = Some(s);
     d.emit("scan", json!({ "total": total }));
     Ok(summary)
+}
+
+/// A scan can take a while; if the user attached another process meanwhile, its result belongs to
+/// the old one and must not appear as the new session's.
+fn ensure_same_target(d: &Daemon, t: &std::sync::Arc<crate::daemon::Target>) -> Result<(), RpcError> {
+    match d.target.read().unwrap().as_ref() {
+        Some(cur) if std::sync::Arc::ptr_eq(cur, t) => Ok(()),
+        _ => Err(RpcError::new("target_changed", "the target changed while the scan was running; the result was discarded")),
+    }
 }
 
 fn scan_next(d: &Daemon, p: &P) -> R {
@@ -231,6 +241,7 @@ fn scan_next(d: &Daemon, p: &P) -> R {
         d.scan.lock().unwrap().current.take().ok_or_else(|| RpcError::new("no_scan", "no scan in progress").hint("start with scan"))?;
     match d.long_op("scan", || old.next(&t.mem, &q, &d.progress).map_err(core_err)) {
         Ok(new) => {
+            ensure_same_target(d, &t)?;
             let summary = scan_summary(&t, &new, limit);
             let total = new.total();
             let mut st = d.scan.lock().unwrap();

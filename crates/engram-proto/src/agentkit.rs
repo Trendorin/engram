@@ -31,7 +31,14 @@ fn upsert_block(path: &Path, block: &str) -> io::Result<()> {
 }
 
 fn merge_json(path: &Path, pointer: &[&str], value: Value, base: Value) -> io::Result<()> {
-    let mut root: Value = fs::read_to_string(path).ok().and_then(|s| serde_json::from_str(&s).ok()).unwrap_or(base);
+    // A file that exists but is not valid JSON is the user's: report it instead of overwriting it.
+    let mut root: Value = match fs::read_to_string(path) {
+        Ok(text) => serde_json::from_str(&text).map_err(|e| {
+            io::Error::new(io::ErrorKind::InvalidData, format!("{} is not valid JSON ({e}); fix or remove it", path.display()))
+        })?,
+        Err(e) if e.kind() == io::ErrorKind::NotFound => base,
+        Err(e) => return Err(e),
+    };
     let mut cur = &mut root;
     for key in pointer {
         if !cur.is_object() {
