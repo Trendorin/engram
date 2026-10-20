@@ -13,6 +13,18 @@ fn has_file_cap(p: &Path) -> bool {
     unsafe { libc::getxattr(c.as_ptr(), c"security.capability".as_ptr(), std::ptr::null_mut(), 0) > 0 }
 }
 
+/// Is the file capability the "effective" form (`=ep`, as older versions granted)? Such a file cannot be
+/// executed where the kernel forbids gaining privileges (no_new_privs: agent sandboxes, Flatpak, Steam's
+/// runtime) or where CAP_SYS_PTRACE is not in the bounding set: exec fails with "Operation not permitted".
+/// `=p` is enough, because the engine raises the capability itself only while attaching.
+fn file_cap_effective(p: &Path) -> bool {
+    let Ok(c) = std::ffi::CString::new(p.as_os_str().as_encoded_bytes()) else { return false };
+    let mut buf = [0u8; 32];
+    // SAFETY: getxattr writes at most buf.len() bytes into buf.
+    let n = unsafe { libc::getxattr(c.as_ptr(), c"security.capability".as_ptr(), buf.as_mut_ptr().cast(), buf.len()) };
+    n >= 4 && u32::from_le_bytes([buf[0], buf[1], buf[2], buf[3]]) & 1 != 0
+}
+
 fn engram_bin() -> PathBuf {
     paths::appimage().or_else(|| std::env::current_exe().and_then(|p| p.canonicalize()).ok()).unwrap_or_else(|| PathBuf::from("engram"))
 }
@@ -40,6 +52,12 @@ pub fn doctor() -> ExitCode {
 
     let scope = std::fs::read_to_string("/proc/sys/kernel/yama/ptrace_scope").ok().map(|s| s.trim().to_string());
     let cap = daemon_bin.as_deref().is_some_and(has_file_cap);
+    if daemon_bin.as_deref().is_some_and(|p| has_file_cap(p) && file_cap_effective(p)) {
+        warn(
+            "memory access",
+            "the capability is in its old \"effective\" form; run `engram setup` to switch it (needed to start in sandboxes)",
+        );
+    }
     match (scope.as_deref(), cap) {
         (_, true) => ok("memory access", "engramd has CAP_SYS_PTRACE (any of your processes)"),
         (Some("0") | None, _) => ok("memory access", "kernel allows tracing your processes (ptrace_scope=0)"),
@@ -112,9 +130,13 @@ pub fn setup() -> ExitCode {
         println!("  Start the game from Engram instead (\"Start a program\" in the window, or");
         println!("  `engram launch -- <command>`, e.g. as the Steam launch option), or install");
         println!("  the Arch, Debian or Fedora package to grant access once.\n");
-    } else if has_file_cap(&daemon) {
+    } else if has_file_cap(&daemon) && !file_cap_effective(&daemon) {
         ok("memory access", format!("{} already has CAP_SYS_PTRACE", tilde(&daemon)));
     } else {
+        if has_file_cap(&daemon) {
+            println!("  {} has the capability in its \"effective\" form, which stops the engine from starting in", tilde(&daemon));
+            println!("  sandboxes (agents, Flatpak, Steam runtime). Switching it to the permitted form.\n");
+        }
         println!("  Linux lets a program read another program's memory only if it started it");
         println!("  (Yama ptrace_scope). Engram grants exactly one capability, CAP_SYS_PTRACE,");
         println!("  to its small engine binary {}.", tilde(&daemon));
@@ -140,7 +162,7 @@ sum() { sha256sum "$f" | cut -d' ' -f1; }
 if [ ! -f "$f" ] || [ -L "$f" ] || [ "$(sum)" != "$want" ]; then
     echo "engramd changed while waiting for the password; nothing was granted" >&2; exit 1
 fi
-"$setcap" cap_sys_ptrace=ep "$f" || exit 1
+"$setcap" cap_sys_ptrace=p "$f" || exit 1
 if [ -L "$f" ] || [ "$(sum)" != "$want" ]; then
     "$setcap" -r "$f" 2>/dev/null
     echo "engramd changed while the capability was applied; it was removed again" >&2; exit 1
@@ -150,7 +172,7 @@ fi"#;
         match status {
             Ok(s) if s.success() && has_file_cap(&daemon) => ok("memory access", "granted"),
             _ => {
-                bad("memory access", format!("not granted. Manually: sudo setcap cap_sys_ptrace=ep {}", daemon.display()));
+                bad("memory access", format!("not granted. Manually: sudo setcap cap_sys_ptrace=p {}", daemon.display()));
                 return ExitCode::from(1);
             }
         }

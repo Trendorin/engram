@@ -74,7 +74,7 @@ Options for scripts and CI:
 | `--purge` | With `--uninstall`, also delete settings, tables and logs |
 
 The installer never runs `sudo` itself. Only `engram setup` asks for your password, through
-pkexec (a desktop prompt) or sudo, for a single `setcap` on `engramd`.
+pkexec (a desktop prompt) or sudo, for a single `setcap` on `engramd` (`cap_sys_ptrace=p`, the permitted form: the engine raises it itself only while attaching).
 
 ## Memory access: `engram setup`
 

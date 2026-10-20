@@ -124,7 +124,17 @@ pub fn spawn_daemon() -> Result<(), RpcError> {
             Ok(())
         });
     }
-    cmd.spawn().map_err(|e| RpcError::new("daemon_unavailable", format!("cannot start engramd: {e}")))?;
+    cmd.spawn().map_err(|e| {
+        let err = RpcError::new("daemon_unavailable", format!("cannot start engramd: {e}"));
+        if e.kind() == io::ErrorKind::PermissionDenied {
+            err.hint(
+                "Operation not permitted usually means this shell may not gain privileges (an agent or Flatpak sandbox, no_new_privs) \
+                 or engramd has the old `=ep` capability: run `engram setup` in a normal terminal, or `sudo setcap cap_sys_ptrace=p $(which engramd)`.",
+            )
+        } else {
+            err
+        }
+    })?;
     Ok(())
 }
 

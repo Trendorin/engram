@@ -12,6 +12,11 @@ and versions follow [Semantic Versioning](https://semver.org/).
   The check added in 1.0.1 against swapping the engine while the password prompt is open used a path that
   `setcap` refuses. The elevated step now verifies the file's content and that it is not a symlink right
   before and right after applying the capability, and removes the capability again if the file changed.
+- **`engramd` did not start in sandboxes** ("Operation not permitted"): the capability was granted in the
+  "effective" form (`=ep`), which the kernel refuses to execute where privileges cannot be gained
+  (agent sandboxes, Flatpak, Steam's runtime). It is now granted as `cap_sys_ptrace=p`; the engine raises it
+  itself only while attaching, as before. `engram setup` converts an old grant, `engram doctor` points it
+  out, and the error message names the cause.
 
 ## [1.1.1] — 2026-10-20
 
