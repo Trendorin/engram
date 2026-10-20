@@ -4,7 +4,7 @@
 %global _lto_cflags %{nil}
 
 Name:           engram
-Version:        1.1.0
+Version:        1.1.1
 Release:        1%{?dist}
 Summary:        Memory scanner and debugger for Linux that AI agents can drive
 License:        GPL-3.0-or-later
@@ -59,6 +59,9 @@ echo "to %{_bindir}/engramd, asks for your password). Without it, start games th
 %{_datadir}/icons/hicolor/scalable/apps/io.github.trendorin.Engram.svg
 
 %changelog
+* Tue Oct 20 2026 Trendorin <193045225+Trendorin@users.noreply.github.com> - 1.1.1-1
+- AppImage fix: Qt Wayland shell plugins
+
 * Tue Oct 20 2026 Trendorin <193045225+Trendorin@users.noreply.github.com> - 1.1.0-1
 - Language setting (English, Russian), Russian window
 

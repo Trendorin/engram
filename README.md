@@ -6,7 +6,7 @@
 
 Memory scanner for Linux, Wine and AI agents.
 
-[![Release](https://img.shields.io/badge/release-v1.1.0-6e56f0)](https://github.com/Trendorin/engram/releases/latest)
+[![Release](https://img.shields.io/badge/release-v1.1.1-6e56f0)](https://github.com/Trendorin/engram/releases/latest)
 [![License](https://img.shields.io/badge/license-GPL--3.0--or--later-6e56f0)](LICENSE)
 ![Rust](https://img.shields.io/badge/rust-1.88%2B-6e56f0)
 ![Platform](https://img.shields.io/badge/platform-Linux-6e56f0)
@@ -44,16 +44,16 @@ address to your table. It cannot change memory until you click **Allow**.
 
 | your system | file from the [latest release](https://github.com/Trendorin/engram/releases/latest) |
 |---|---|
-| Arch Linux, CachyOS, Manjaro | `engram-1.1.0-1-x86_64.pkg.tar.zst` |
-| Debian 13 and newer | `engram_1.1.0-1_amd64.deb` |
-| Fedora 44 and newer | `engram-1.1.0-1.fc44.x86_64.rpm` |
-| any distribution with glibc 2.35+ | `Engram-1.1.0-x86_64.AppImage` |
+| Arch Linux, CachyOS, Manjaro | `engram-1.1.1-1-x86_64.pkg.tar.zst` |
+| Debian 13 and newer | `engram_1.1.1-1_amd64.deb` |
+| Fedora 44 and newer | `engram-1.1.1-1.fc44.x86_64.rpm` |
+| any distribution with glibc 2.35+ | `Engram-1.1.1-x86_64.AppImage` |
 
 ```sh
-sudo pacman -U ./engram-1.1.0-1-x86_64.pkg.tar.zst    # Arch
-sudo apt install ./engram_1.1.0-1_amd64.deb            # Debian
-sudo dnf install ./engram-1.1.0-1.fc44.x86_64.rpm      # Fedora
-chmod +x Engram-1.1.0-x86_64.AppImage && ./Engram-1.1.0-x86_64.AppImage
+sudo pacman -U ./engram-1.1.1-1-x86_64.pkg.tar.zst    # Arch
+sudo apt install ./engram_1.1.1-1_amd64.deb            # Debian
+sudo dnf install ./engram-1.1.1-1.fc44.x86_64.rpm      # Fedora
+chmod +x Engram-1.1.1-x86_64.AppImage && ./Engram-1.1.1-x86_64.AppImage
 ```
 
 Every package is built in a clean container of its distribution, then installed and started

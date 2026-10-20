@@ -5,6 +5,14 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.1.1] — 2026-10-20
+
+### Fixed
+- The AppImage did not start on Wayland: it lacked Qt's Wayland shell plugins (the build tool that packs it
+  was pinned to a release that does not deploy them). The release workflow now checks that they are inside.
+  The distribution packages were not affected.
+
+
 ## [1.1.0] — 2026-10-20
 
 ### Added
@@ -99,7 +107,8 @@ First release.
 - Settings in `~/.config/engram/config.json`, editable with `engram config` and in the window.
 - `engram uninstall` removes exactly the installed files (manifest), optionally user data.
 
-[Unreleased]: https://github.com/Trendorin/engram/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/Trendorin/engram/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/Trendorin/engram/releases/tag/v1.1.1
 [1.1.0]: https://github.com/Trendorin/engram/releases/tag/v1.1.0
 [1.0.1]: https://github.com/Trendorin/engram/releases/tag/v1.0.1
 [1.0.0]: https://github.com/Trendorin/engram/releases/tag/v1.0.0
