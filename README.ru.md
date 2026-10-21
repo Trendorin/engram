@@ -62,8 +62,9 @@ chmod +x Engram-1.1.2-x86_64.AppImage && ./Engram-1.1.2-x86_64.AppImage
 
 ### Из исходников
 
-Нужны Rust 1.88+, компилятор C++ и заголовки Qt 6 (`qt6-base` в Arch, `qt6-base-dev` в Debian,
-`qt6-qtbase-devel` в Fedora).
+`install.sh` проверит Rust 1.88+, компилятор C/C++ и библиотеки для окна и предложит поставить
+недостающее через pacman, apt, dnf или zypper. Где Rust в дистрибутиве старее (Debian, Ubuntu),
+он предложит rustup — в `~/.cargo` и без `sudo`.
 
 ```sh
 git clone https://github.com/Trendorin/engram && cd engram
@@ -71,7 +72,8 @@ git clone https://github.com/Trendorin/engram && cd engram
 ./install.sh --uninstall     # удалит ровно то, что поставил
 ```
 
-`./install.sh --help` покажет параметры (`--yes`, `--prefix`, `--no-gui`, `--setup`).
+`./install.sh --help` покажет параметры (`--yes`, `--prefix`, `--no-gui`, `--setup`,
+`--no-packages`).
 
 ### Доступ к памяти
 

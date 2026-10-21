@@ -62,8 +62,9 @@ With arguments the AppImage is the `engram` command line (`./Engram-*.AppImage d
 
 ### From source
 
-You need Rust 1.88+, a C++ compiler and Qt 6 development files (`qt6-base` on Arch,
-`qt6-base-dev` on Debian, `qt6-qtbase-devel` on Fedora).
+`install.sh` checks for Rust 1.88+, a C/C++ compiler and the libraries the window needs, and
+offers to install whatever is missing with pacman, apt, dnf or zypper. Where the distribution's
+Rust is older (Debian, Ubuntu) it offers rustup, into `~/.cargo` and without `sudo`.
 
 ```sh
 git clone https://github.com/Trendorin/engram && cd engram
@@ -71,7 +72,8 @@ git clone https://github.com/Trendorin/engram && cd engram
 ./install.sh --uninstall     # removes exactly what it installed
 ```
 
-`./install.sh --help` lists the options (`--yes`, `--prefix`, `--no-gui`, `--setup`).
+`./install.sh --help` lists the options (`--yes`, `--prefix`, `--no-gui`, `--setup`,
+`--no-packages`).
 
 ### Memory access
 

@@ -27,14 +27,22 @@ chmod +x Engram-*-x86_64.AppImage                # всё остальное
 
 ## Из исходников
 
-Нужны Rust (stable, с [rustup.rs](https://rustup.rs)), компилятор C++ и, для нативного
-вида, файлы разработки Qt 6:
+Нужны Rust 1.88 или новее, компилятор C/C++, pkg-config, заголовки fontconfig и xkbcommon
+для окна и, для нативного вида, Qt 6. `install.sh` всё это проверит и предложит поставить
+недостающее (ответ по умолчанию — да, в том числе с `--yes`):
 
-| Дистрибутив | Пакеты |
+| Дистрибутив | Пакеты, которые установщик предложит поставить |
 |---|---|
-| Arch / CachyOS / Manjaro | `base-devel qt6-base` |
-| Debian / Ubuntu | `build-essential qt6-base-dev qt6-base-dev-tools libfontconfig-dev libxkbcommon-dev` |
-| Fedora | `gcc-c++ qt6-qtbase-devel fontconfig-devel libxkbcommon-devel` |
+| Arch / CachyOS / Manjaro | `base-devel rust libcap qt6-base fontconfig libxkbcommon` |
+| Debian / Ubuntu | `build-essential pkg-config curl ca-certificates libcap2-bin qt6-base-dev qt6-base-dev-tools libfontconfig-dev libxkbcommon-dev` |
+| Fedora | `gcc gcc-c++ pkgconf-pkg-config cargo rust libcap qt6-qtbase-devel fontconfig-devel libxkbcommon-devel` |
+| openSUSE | `gcc gcc-c++ pkgconf-pkg-config cargo rust libcap-progs qt6-base-devel fontconfig-devel libxkbcommon-devel` |
+
+В Debian и Ubuntu Rust старее 1.88, как и в некоторых других системах. Тогда установщик предложит
+поставить текущий stable Rust через [rustup](https://rustup.rs) в `~/.cargo` — без `sudo` и без
+правки профиля оболочки; если rustup уже есть, он добавит toolchain stable, а ваш toolchain по
+умолчанию не тронет. Без терминала и без `sudo` без пароля он вместо этого покажет команду.
+`--no-packages` всё это отключает.
 
 ```sh
 git clone https://github.com/Trendorin/engram
@@ -49,7 +57,7 @@ cd engram
 
 В терминале `./install.sh` работает интерактивно:
 
-1. проверяет систему: Rust, компилятор C++, Qt;
+1. проверяет систему (Rust, компилятор, библиотеки, Qt) и предлагает поставить недостающее;
 2. спрашивает, куда ставить (по умолчанию `~/.local`), нужно ли окно и выдать ли сразу
    доступ к памяти;
 3. собирает проект (при установке из исходников) и показывает прогресс;
@@ -68,10 +76,12 @@ cd engram
 | `--prefix DIR` | Ставить в `DIR/bin` и `DIR/share` |
 | `--no-gui` | Только движок, CLI и MCP-сервер |
 | `--setup` / `--no-setup` | Выдать доступ к памяти после установки или не спрашивать |
+| `--no-packages` | Не ставить пакеты и Rust, только назвать, чего не хватает |
 | `--uninstall` | Удалить Engram (то же, что `engram uninstall`) |
 | `--purge` | Вместе с `--uninstall`: удалить ещё настройки, таблицы и логи |
 
-Сам установщик никогда не вызывает `sudo`. Пароль спрашивает только `engram setup`, через
+Сам Engram ставится без `sudo`. Установщик просит его только для того, чтобы поставить
+недостающие пакеты дистрибутива; кроме этого пароль спрашивает только `engram setup`, через
 pkexec (окно рабочего стола) или sudo, и только для одного `setcap` на `engramd`.
 
 ## Доступ к памяти: `engram setup`

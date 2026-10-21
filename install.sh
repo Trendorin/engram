@@ -6,11 +6,14 @@
 #   ./install.sh --prefix DIR    install into DIR/bin and DIR/share (default ~/.local)
 #   ./install.sh --no-gui        engine, CLI and MCP server only
 #   ./install.sh --setup         also grant memory access (runs `engram setup`, asks for your password)
+#   ./install.sh --no-packages   never install missing packages or Rust, only name them
 #   ./install.sh --uninstall     remove Engram (add --purge to delete settings, tables and logs too)
 #
 # Builds from this source checkout with cargo. Prebuilt packages (Arch, Debian,
-# Fedora, AppImage) are on the releases page. Never uses sudo itself: only
-# `engram setup` asks for your password, for one `setcap` on the engine binary.
+# Fedora, AppImage) are on the releases page. Engram itself goes into your home
+# without sudo; sudo is used only, after asking, to install missing distribution
+# packages (pacman, apt, dnf or zypper), and `engram setup` asks for your password
+# for one `setcap` on the engine binary. A missing or old Rust comes from rustup.
 
 set -euo pipefail
 
@@ -23,7 +26,9 @@ ASSUME_YES=0
 ACTION=install
 PURGE=0
 
-usage() { sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'; }
+PACKAGES=1
+
+usage() { sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//'; }
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -32,6 +37,7 @@ while [ $# -gt 0 ]; do
         --no-gui) GUI=0; shift ;;
         --setup) SETUP=yes; shift ;;
         --no-setup) SETUP=no; shift ;;
+        --no-packages) PACKAGES=0; shift ;;
         -y|--yes) ASSUME_YES=1; shift ;;
         --uninstall) ACTION=uninstall; shift ;;
         --purge) PURGE=1; shift ;;
@@ -186,7 +192,7 @@ cmake_progress() {
     grep -oE '^\[ *[0-9]+(/[0-9]+|%)\]' "$1" | tail -1 | tr -d '[] '
 }
 
-# Distribution family for package hints: arch, debian, fedora or other.
+# Distribution family for package hints: arch, debian, fedora, suse or other.
 distro() {
     local id like
     id="$(. /etc/os-release 2>/dev/null && printf '%s' "${ID:-}")"
@@ -195,23 +201,56 @@ distro() {
         *" arch "*) printf arch ;;
         *" debian "* | *" ubuntu "*) printf debian ;;
         *" fedora "* | *" rhel "*) printf fedora ;;
+        *" suse "* | *" opensuse "*) printf suse ;;
         *) printf other ;;
     esac
 }
 
-# need_packages "what" arch-pkgs debian-pkgs fedora-pkgs → stops with the right install command
-need_packages() {
-    local what="$1" cmd
+# as_root command... — runs it directly when we are root (containers), otherwise through sudo
+as_root() { if [ "$(id -u)" = 0 ]; then "$@"; else sudo "$@"; fi; }
+
+# pkg_install arch-pkgs debian-pkgs fedora-pkgs suse-pkgs — the package manager call, as root
+pkg_install() {
     case "$(distro)" in
-        arch) cmd="sudo pacman -S --needed $2" ;;
-        debian) cmd="sudo apt install $3" ;;
-        fedora) cmd="sudo dnf install $4" ;;
-        *) cmd="" ;;
+        arch) as_root pacman -S --needed --noconfirm $1 ;;
+        debian) as_root env DEBIAN_FRONTEND=noninteractive sh -c "apt-get update -q && apt-get install -y --no-install-recommends $2" ;;
+        fedora) as_root dnf install -y $3 ;;
+        suse) as_root zypper --non-interactive install $4 ;;
+        *) return 1 ;;
     esac
-    printf '\n  %s✗ %s%s\n' "$RED" "$what" "$R" >&2
-    [ -n "$cmd" ] && printf '\n    Install them with:\n      %s%s%s\n' "$B" "$cmd" "$R" >&2
-    printf '\n    Then run ./install.sh again.\n\n' >&2
-    exit 1
+}
+
+# pkg_hint arch-pkgs debian-pkgs fedora-pkgs suse-pkgs → the command a person would type
+pkg_hint() {
+    case "$(distro)" in
+        arch) printf 'sudo pacman -S --needed %s' "$1" ;;
+        debian) printf 'sudo apt install %s' "$2" ;;
+        fedora) printf 'sudo dnf install %s' "$3" ;;
+        suse) printf 'sudo zypper install %s' "$4" ;;
+    esac
+}
+
+# get_packages "what is missing" arch-pkgs debian-pkgs fedora-pkgs suse-pkgs
+# Offers to install the packages (default yes) and returns 0 once they are in. Asks for the sudo
+# password in the foreground, before the progress line starts.
+get_packages() {
+    local what="$1" hint
+    shift
+    hint="$(pkg_hint "$@")"
+    warn "$what"
+    if [ -z "$hint" ]; then
+        info "install them with your distribution's package manager"
+        return 1
+    fi
+    if [ "$PACKAGES" = 1 ] && ask_yn "Install them now ($hint)?" y; then
+        if [ "$(id -u)" = 0 ] || { [ "$INTERACTIVE" = 0 ] && ! [ -t 0 ] && sudo -n true 2>/dev/null; } || { [ -t 0 ] && sudo -v; }; then
+            ( spin "Installing packages" pkg_install "$@" ) && return 0
+        else
+            warn "sudo is not available here"
+        fi
+    fi
+    info "install them with:  $hint"
+    return 1
 }
 
 # progress for cargo: crates compiled so far and the current one
@@ -242,7 +281,10 @@ set_paths() {
 set_paths
 
 installed_version() {
-    if [ -x "$BIN_DIR/engram" ]; then "$BIN_DIR/engram" --version 2>/dev/null | awk '{print $2}'; fi
+    local name ver
+    if [ -x "$BIN_DIR/engram" ]; then
+        read -r name ver _ < <("$BIN_DIR/engram" --version 2>/dev/null) && printf '%s' "$ver"
+    fi
 }
 
 # ---- uninstall --------------------------------------------------------------------------
@@ -277,33 +319,110 @@ uninstall() {
 
 # ---- checks --------------------------------------------------------------------------------
 
+RUST_MIN=1.88
+# What Engram needs to build, per distribution (arch, debian, fedora, suse). Debian and Ubuntu ship
+# a Rust older than RUST_MIN, so there Rust comes from rustup (get_rust).
+CORE_PKGS=(
+    "base-devel rust libcap"
+    "build-essential pkg-config curl ca-certificates libcap2-bin"
+    "gcc gcc-c++ pkgconf-pkg-config cargo rust libcap"
+    "gcc gcc-c++ pkgconf-pkg-config cargo rust libcap-progs"
+)
+# The window: fontconfig and xkbcommon for Slint, Qt 6 for the native style.
+GUI_PKGS=(
+    "qt6-base fontconfig libxkbcommon"
+    "qt6-base-dev qt6-base-dev-tools libfontconfig-dev libxkbcommon-dev"
+    "qt6-qtbase-devel fontconfig-devel libxkbcommon-devel"
+    "qt6-base-devel fontconfig-devel libxkbcommon-devel"
+)
+
+cargo_version() {
+    local name ver
+    read -r name ver _ < <(cargo --version 2>/dev/null) && printf '%s' "$ver"
+}
+rust_ok() {
+    local v
+    v="$(cargo_version)" && [ "$(printf '%s\n%s\n' "$v" "$RUST_MIN" | sort -V | head -n1)" = "$RUST_MIN" ]
+}
+distro_has_rust() { case "$(distro)" in arch | fedora | suse) return 0 ;; *) return 1 ;; esac; }
+
+# build_tools_present → 0 when a compiler, pkg-config, cargo (where the distribution has a recent
+# one) and, for the window, a C++ compiler and the fontconfig and xkbcommon headers are there
+build_tools_present() {
+    { command -v cc >/dev/null 2>&1 || command -v gcc >/dev/null 2>&1 || command -v clang >/dev/null 2>&1; } &&
+        { ! distro_has_rust || command -v cargo >/dev/null 2>&1; } || return 1
+    [ "$GUI" = 1 ] || return 0
+    { command -v c++ >/dev/null 2>&1 || command -v g++ >/dev/null 2>&1 || command -v clang++ >/dev/null 2>&1; } &&
+        pkg-config --exists fontconfig xkbcommon 2>/dev/null
+}
+
+# packages arch|debian|fedora|suse index → the package list for this install (with or without the window)
+packages() {
+    local i
+    for i in 0 1 2 3; do
+        if [ "$GUI" = 1 ]; then printf '%s\n' "${CORE_PKGS[i]} ${GUI_PKGS[i]}"; else printf '%s\n' "${CORE_PKGS[i]}"; fi
+    done
+}
+
+# get_rust — Rust RUST_MIN+ through rustup, into ~/.cargo and without sudo
+get_rust() {
+    local have
+    have="$(cargo_version || true)"
+    warn "Engram needs Rust $RUST_MIN or newer${have:+ (this system has $have)}"
+    if [ "$PACKAGES" = 1 ] && command -v rustup >/dev/null 2>&1; then
+        if ask_yn "Install the current stable Rust with rustup (your default toolchain stays as it is)?" y; then
+            ( spin "Installing Rust" rustup toolchain install stable --profile minimal ) && export RUSTUP_TOOLCHAIN=stable
+        fi
+    elif [ "$PACKAGES" = 1 ] && command -v curl >/dev/null 2>&1; then
+        if ask_yn "Install Rust with rustup into $(tilde "$CARGO_BIN") (downloads it from rust-lang.org, no sudo)?" y; then
+            ( spin "Installing Rust" bash -c 'set -o pipefail; curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --no-modify-path' ) &&
+                PATH="$CARGO_BIN:$PATH"
+        fi
+    fi
+    rust_ok || die "install Rust $RUST_MIN or newer from https://rustup.rs, then run ./install.sh again"
+}
+
+QMAKE_FOUND=""
+find_qt() {
+    local cand
+    QMAKE_FOUND="${QMAKE:-}"
+    [ -n "$QMAKE_FOUND" ] && return 0
+    for cand in qmake6 /usr/lib/qt6/bin/qmake /usr/lib64/qt6/bin/qmake /usr/lib/x86_64-linux-gnu/qt6/bin/qmake qmake-qt6 qmake; do
+        if command -v "$cand" >/dev/null 2>&1 && "$cand" -query QT_VERSION 2>/dev/null | grep -q '^6\.'; then
+            QMAKE_FOUND="$(command -v "$cand")"
+            return 0
+        fi
+    done
+    return 1
+}
+
 QT_NATIVE=0
+CARGO_BIN="${CARGO_HOME:-$HOME/.cargo}/bin"
 check_system() {
     step "Checking your system"
     [ "$(uname -s)" = Linux ] || die "Engram runs on Linux only"
-    ok "Linux $(uname -m)"
-    command -v cargo >/dev/null 2>&1 || die "Rust is not installed. Get it from https://rustup.rs and run this again."
-    ok "Rust $(cargo --version | awk '{print $2}')"
-    if [ "$GUI" = 1 ]; then
-        command -v c++ >/dev/null 2>&1 || command -v g++ >/dev/null 2>&1 || command -v clang++ >/dev/null 2>&1 \
-            || die "a C++ compiler is needed for the window (install gcc or clang), or use --no-gui"
-        local q="${QMAKE:-}" cand
-        if [ -z "$q" ]; then
-            for cand in qmake6 /usr/lib/qt6/bin/qmake /usr/lib64/qt6/bin/qmake qmake-qt6 qmake; do
-                if command -v "$cand" >/dev/null 2>&1 && "$cand" -query QT_VERSION 2>/dev/null | grep -q '^6\.'; then
-                    q="$(command -v "$cand")"
-                    break
-                fi
-            done
-        fi
-        if [ -n "$q" ]; then
-            export QMAKE="$q"
-            QT_NATIVE=1
-            ok "Qt $("$q" -query QT_VERSION) — the window uses your system style"
-        else
-            warn "Qt 6 not found — the window will use Slint's own style"
-            info "For the native look install qt6-base (Arch), qt6-base-dev (Debian/Ubuntu) or qt6-qtbase-devel (Fedora)."
-        fi
+    ok "Linux $(uname -m) · $(. /etc/os-release 2>/dev/null && printf '%s' "${PRETTY_NAME:-unknown distribution}")"
+    # A rustup install from earlier is used even when its directory is not on PATH.
+    case ":$PATH:" in *":$CARGO_BIN:"*) ;; *) [ -x "$CARGO_BIN/cargo" ] && PATH="$CARGO_BIN:$PATH" ;; esac
+    local pkgs=()
+    mapfile -t pkgs < <(packages)
+    if ! build_tools_present; then
+        get_packages "$([ "$GUI" = 1 ] && printf 'a C/C++ compiler, pkg-config, fontconfig and xkbcommon' || printf 'a C compiler')$(distro_has_rust && printf ' and Rust') are needed to build Engram" "${pkgs[@]}" || true
+        build_tools_present || die "the build tools are still missing — install them, then run ./install.sh again"
+    fi
+    rust_ok || get_rust
+    ok "Rust $(cargo_version)"
+    [ "$GUI" = 1 ] || return 0
+    if ! find_qt; then
+        get_packages "Qt 6 not found — the window would use Slint's own style instead of your system's" "${GUI_PKGS[@]}" || true
+        find_qt || true
+    fi
+    if [ -n "$QMAKE_FOUND" ]; then
+        export QMAKE="$QMAKE_FOUND"
+        QT_NATIVE=1
+        ok "Qt $("$QMAKE" -query QT_VERSION) — the window uses your system style"
+    else
+        warn "without Qt 6 the window uses Slint's own style"
     fi
 }
 
@@ -366,8 +485,21 @@ install_files() {
     if pgrep -x engram-gui >/dev/null 2>&1; then warn "an Engram window is open — restart it to use the new version"; fi
 }
 
+# other_install → the engram that stays the user's one when this prefix is not on PATH first
+other_install() {
+    local e
+    e="$(command -v engram 2>/dev/null)" || return 1
+    [ "$e" -ef "$BIN_DIR/engram" ] && return 1
+    printf '%s' "$e"
+}
+
 prepare_workspace() {
-    local ws
+    local ws other
+    # The workspace names one engram binary; a second install elsewhere must not take it over.
+    if other="$(other_install)"; then
+        info "agent workspace left to $(tilde "$other") (later: $(tilde "$BIN_DIR")/engram agent-init)"
+        return 0
+    fi
     ws="$("$BIN_DIR/engram" config get workspace 2>/dev/null || true)"
     case "$ws" in
         "") ws="${XDG_DATA_HOME:-$HOME/.local/share}/engram/workspace" ;;

@@ -5,6 +5,19 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- `install.sh` offers to install missing build tools and libraries with pacman, apt, dnf or zypper
+  (openSUSE is new) instead of stopping, and Rust 1.88+ through rustup where the distribution's
+  Rust is older (Debian, Ubuntu): into `~/.cargo`, without `sudo`. `--no-packages` turns that off.
+  It also checks for a C compiler and, for the window, pkg-config, fontconfig and xkbcommon up front.
+- CI installs Engram with `install.sh` on bare Arch, Debian 12 and 13, Ubuntu 24.04, Fedora 44 and
+  openSUSE Tumbleweed images, runs it and uninstalls it.
+
+### Fixed
+- Installing a second copy with `--prefix` pointed the agent workspace (`.mcp.json`,
+  `opencode.json`, `AGENTS.md`) at that copy. The workspace now stays with the `engram` on your
+  PATH.
+
 ## [1.1.2] — 2026-10-20
 
 ### Fixed

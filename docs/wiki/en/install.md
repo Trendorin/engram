@@ -28,14 +28,22 @@ through Engram instead.
 
 ## From source
 
-You need Rust (stable, from [rustup.rs](https://rustup.rs)), a C++ compiler and, for the
-native look, the Qt 6 development files:
+You need Rust 1.88 or newer, a C/C++ compiler, pkg-config, the fontconfig and xkbcommon
+headers for the window and, for the native look, Qt 6. `install.sh` checks for all of it and offers
+to install what is missing (the default answer is yes, also with `--yes`):
 
-| Distribution | Packages |
+| Distribution | Packages the installer offers to install |
 |---|---|
-| Arch / CachyOS / Manjaro | `base-devel qt6-base` |
-| Debian / Ubuntu | `build-essential qt6-base-dev qt6-base-dev-tools libfontconfig-dev libxkbcommon-dev` |
-| Fedora | `gcc-c++ qt6-qtbase-devel fontconfig-devel libxkbcommon-devel` |
+| Arch / CachyOS / Manjaro | `base-devel rust libcap qt6-base fontconfig libxkbcommon` |
+| Debian / Ubuntu | `build-essential pkg-config curl ca-certificates libcap2-bin qt6-base-dev qt6-base-dev-tools libfontconfig-dev libxkbcommon-dev` |
+| Fedora | `gcc gcc-c++ pkgconf-pkg-config cargo rust libcap qt6-qtbase-devel fontconfig-devel libxkbcommon-devel` |
+| openSUSE | `gcc gcc-c++ pkgconf-pkg-config cargo rust libcap-progs qt6-base-devel fontconfig-devel libxkbcommon-devel` |
+
+Debian and Ubuntu ship a Rust older than 1.88, and so may other systems. Then the installer offers
+to install the current stable Rust with [rustup](https://rustup.rs) into `~/.cargo`, without `sudo`
+and without touching your shell profile; with rustup already there it adds a stable toolchain
+and leaves your default as it is. Without a terminal and without password-less `sudo` it prints
+the command instead. `--no-packages` turns all of it off.
 
 ```sh
 git clone https://github.com/Trendorin/engram
@@ -51,7 +59,7 @@ system style.
 
 Run in a terminal, `./install.sh` is interactive:
 
-1. checks your system (Rust, C++ compiler, Qt);
+1. checks your system (Rust, compiler, libraries, Qt) and offers to install what is missing;
 2. asks where to install (default `~/.local`), whether to install the window, and whether to
    grant memory access now;
 3. builds (when run from source), showing progress;
@@ -70,10 +78,12 @@ Options for scripts and CI:
 | `--prefix DIR` | Install into `DIR/bin` and `DIR/share` |
 | `--no-gui` | Engine, CLI and MCP server only |
 | `--setup` / `--no-setup` | Grant memory access after installing, or don't ask |
+| `--no-packages` | Never install packages or Rust, only name what is missing |
 | `--uninstall` | Remove Engram (same as `engram uninstall`) |
 | `--purge` | With `--uninstall`, also delete settings, tables and logs |
 
-The installer never runs `sudo` itself. Only `engram setup` asks for your password, through
+Engram itself goes in without `sudo`. The installer asks for it only to install missing
+distribution packages; besides that only `engram setup` asks for your password, through
 pkexec (a desktop prompt) or sudo, for a single `setcap` on `engramd` (`cap_sys_ptrace=p`, the permitted form: the engine raises it itself only while attaching).
 
 ## Memory access: `engram setup`
