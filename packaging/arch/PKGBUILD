@@ -2,7 +2,7 @@
 #
 # Builds the source tree this file lives in:  cd packaging/arch && makepkg -si
 pkgname=engram
-pkgver=1.1.2
+pkgver=1.1.3
 pkgrel=1
 pkgdesc='Memory scanner and debugger for Linux that AI agents can drive (native, Wine and Proton)'
 arch=('x86_64')

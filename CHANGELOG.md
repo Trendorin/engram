@@ -5,6 +5,8 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.1.3] — 2026-10-21
+
 ### Added
 - `install.sh` offers to install missing build tools and libraries with pacman, apt, dnf or zypper
   (openSUSE is new) instead of stopping, and Rust 1.88+ through rustup where the distribution's
@@ -133,7 +135,8 @@ First release.
 - Settings in `~/.config/engram/config.json`, editable with `engram config` and in the window.
 - `engram uninstall` removes exactly the installed files (manifest), optionally user data.
 
-[Unreleased]: https://github.com/Trendorin/engram/compare/v1.1.2...HEAD
+[Unreleased]: https://github.com/Trendorin/engram/compare/v1.1.3...HEAD
+[1.1.3]: https://github.com/Trendorin/engram/releases/tag/v1.1.3
 [1.1.2]: https://github.com/Trendorin/engram/releases/tag/v1.1.2
 [1.1.1]: https://github.com/Trendorin/engram/releases/tag/v1.1.1
 [1.1.0]: https://github.com/Trendorin/engram/releases/tag/v1.1.0

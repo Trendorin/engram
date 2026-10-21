@@ -4,7 +4,7 @@
 %global _lto_cflags %{nil}
 
 Name:           engram
-Version:        1.1.2
+Version:        1.1.3
 Release:        1%{?dist}
 Summary:        Memory scanner and debugger for Linux that AI agents can drive
 License:        GPL-3.0-or-later
@@ -59,6 +59,9 @@ echo "to %{_bindir}/engramd, asks for your password). Without it, start games th
 %{_datadir}/icons/hicolor/scalable/apps/io.github.trendorin.Engram.svg
 
 %changelog
+* Wed Oct 21 2026 Trendorin <193045225+Trendorin@users.noreply.github.com> - 1.1.3-1
+- install.sh installs missing packages and Rust
+
 * Tue Oct 20 2026 Trendorin <193045225+Trendorin@users.noreply.github.com> - 1.1.2-1
 - Fix "Grant access" (engram setup)
 
